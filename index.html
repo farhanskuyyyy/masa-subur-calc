@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Masa Subur — Ketahui Masa Subur Anda</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        rose: { 50:'#fff1f2',100:'#ffe4e6',200:'#fecdd3',300:'#fda4af',400:'#fb7185',500:'#f43f5e',600:'#e11d48',700:'#be123c',800:'#9f1239',900:'#881337' },
+                        pink: { 50:'#fdf2f8',100:'#fce7f3',200:'#fbcfe8',300:'#f9a8d4',400:'#f472b6',500:'#ec4899',600:'#db2777',700:'#be185d',800:'#9d174d',900:'#831843' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 25%, #fecdd3 50%, #ffe4e6 75%, #fff1f2 100%); }
+        .card-glow { box-shadow: 0 0 40px rgba(244, 63, 94, 0.08), 0 4px 20px rgba(0,0,0,0.04); }
+        .fertile-pulse { animation: fertilePulse 2s ease-in-out infinite; }
+        @keyframes fertilePulse { 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(1.05); opacity:0.9; } }
+        .result-enter { animation: resultSlide 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes resultSlide { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .dot-pattern { background-image: radial-gradient(circle, #fda4af 1px, transparent 1px); background-size: 20px 20px; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.4); cursor: pointer; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden">
+        <div class="dot-pattern absolute inset-0 opacity-30"></div>
+        <div class="relative max-w-4xl mx-auto px-4 pt-12 pb-8 text-center">
+            <div class="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm text-rose-600 font-medium mb-6 border border-rose-100">
+                <span class="w-2 h-2 bg-rose-400 rounded-full animate-pulse"></span>
+                Gratis & Privasi Terjaga
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
+                Kalkulator <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-500">Masa Subur</span>
+            </h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                Hitung masa subur Anda secara akurat menggunakan metode <strong>kalendar</strong>. 
+                Ketahui jendela subur, ovulasi, dan masa aman dalam satu klik.
+            </p>
+        </div>
+    </div>
+
+    <!-- Calculator Card -->
+    <div class="max-w-2xl mx-auto px-4 -mt-2 pb-16">
+        <div class="bg-white rounded-3xl card-glow p-8 md:p-10 border border-rose-50">
+            
+            <!-- Form -->
+            <form id="calcForm" class="space-y-6">
+                
+                <!-- Date of Last Period -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        📅 Hari Pertama Haid Terakhir
+                    </label>
+                    <input 
+                        type="date" 
+                        id="lastPeriod" 
+                        required
+                        class="w-full px-4 py-3.5 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-gray-800 font-medium focus:border-rose-400 focus:ring-4 focus:ring-rose-100 outline-none transition-all text-base"
+                    >
+                </div>
+
+                <!-- Cycle Length -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        🔄 Panjang Siklus Menstruasi (hari)
+                    </label>
+                    <div class="flex items-center gap-4">
+                        <button type="button" onclick="adjustCycle(-1)" class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 font-bold text-xl hover:bg-rose-100 transition-colors flex items-center justify-center border border-rose-100">−</button>
+                        <div class="flex-1 relative">
+                            <input 
+                                type="number" 
+                                id="cycleLength" 
+                                value="28" 
+                                min="20" 
+                                max="45"
+                                class="w-full px-4 py-3.5 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-gray-800 font-bold text-xl text-center focus:border-rose-400 focus:ring-4 focus:ring-rose-100 outline-none transition-all"
+                            >
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">hari</span>
+                        </div>
+                        <button type="button" onclick="adjustCycle(1)" class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 font-bold text-xl hover:bg-rose-100 transition-colors flex items-center justify-center border border-rose-100">+</button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2 ml-1">Normal: 21–35 hari. Rata-rata: 28 hari</p>
+                </div>
+
+                <!-- Period Duration -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        🩸 Lama Haid (hari)
+                    </label>
+                    <div class="flex items-center gap-4">
+                        <button type="button" onclick="adjustPeriod(-1)" class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 font-bold text-xl hover:bg-rose-100 transition-colors flex items-center justify-center border border-rose-100">−</button>
+                        <div class="flex-1 relative">
+                            <input 
+                                type="number" 
+                                id="periodDuration" 
+                                value="6" 
+                                min="2" 
+                                max="10"
+                                class="w-full px-4 py-3.5 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-gray-800 font-bold text-xl text-center focus:border-rose-400 focus:ring-4 focus:ring-rose-100 outline-none transition-all"
+                            >
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">hari</span>
+                        </div>
+                        <button type="button" onclick="adjustPeriod(1)" class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 font-bold text-xl hover:bg-rose-100 transition-colors flex items-center justify-center border border-rose-100">+</button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2 ml-1">Normal: 3–7 hari</p>
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit" 
+                    class="w-full py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold text-lg rounded-2xl hover:from-rose-600 hover:to-pink-600 transition-all transform hover:scale-[1.01] shadow-lg shadow-rose-200 active:scale-[0.99]"
+                >
+                    ✨ Hitung Masa Subur
+                </button>
+            </form>
+
+            <!-- Results (hidden by default) -->
+            <div id="results" class="hidden mt-8 space-y-4">
+                
+                <!-- Ovulation Date -->
+                <div class="result-enter bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-6 border border-rose-100">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-2xl">🥚</span>
+                        <h3 class="font-bold text-gray-800">Hari Perkiraan Ovulasi</h3>
+                    </div>
+                    <p id="ovulationDate" class="text-2xl font-extrabold text-rose-600"></p>
+                    <p class="text-sm text-gray-500 mt-1">Ini adalah hari paling subur dalam siklus Anda</p>
+                </div>
+
+                <!-- Fertile Window -->
+                <div class="result-enter bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100" style="animation-delay: 0.1s">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-2xl">🌟</span>
+                        <h3 class="font-bold text-gray-800">Jendela Subur</h3>
+                    </div>
+                    <p id="fertileWindow" class="text-xl font-bold text-amber-600"></p>
+                    <p class="text-sm text-gray-500 mt-1">Periode dengan peluang kehamilan tertinggi</p>
+                </div>
+
+                <!-- Safe Window -->
+                <div class="result-enter bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100" style="animation-delay: 0.2s">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-2xl">🛡️</span>
+                        <h3 class="font-bold text-gray-800">Masa Kurang Subur (Relatif Aman)</h3>
+                    </div>
+                    <p id="safeWindow" class="text-lg font-bold text-emerald-600"></p>
+                    <p class="text-sm text-gray-500 mt-1">Peluang kehamilan lebih rendah (bukan 0%)</p>
+                </div>
+
+                <!-- Next 3 Cycles -->
+                <div class="result-enter bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-6 border border-violet-100" style="animation-delay: 0.3s">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-2xl">📅</span>
+                        <h3 class="font-bold text-gray-800">3 Siklus ke Depan</h3>
+                    </div>
+                    <div id="nextCycles" class="space-y-2 mt-3"></div>
+                </div>
+
+                <!-- Calendar View -->
+                <div class="result-enter bg-white rounded-2xl p-6 border border-gray-100 shadow-sm" style="animation-delay: 0.4s">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-2xl">🗓️</span>
+                        <h3 class="font-bold text-gray-800">Kalender 3 Bulan</h3>
+                    </div>
+                    <div id="calendarView" class="grid grid-cols-7 gap-1 text-xs"></div>
+                    <div class="flex flex-wrap gap-4 mt-4 text-xs">
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-400"></span> Haid</div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-400"></span> Subur</div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500 fertile-pulse"></span> Ovulasi</div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-gray-200"></span> Kurang Subur</div>
+                    </div>
+                </div>
+
+                <!-- Disclaimer -->
+                <div class="result-enter bg-gray-50 rounded-2xl p-4 border border-gray-100 text-center" style="animation-delay: 0.5s">
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        ⚠️ Kalkulator ini menggunakan metode kalendar dan <strong>bukan pengganti konsultasi medis</strong>. 
+                        Hasilnya adalah perkiraan. Untuk hasil lebih akurat, gunakan bersama metode lain (suhu tubuh, lendir serviks, dll).
+                    </p>
+                </div>
+
+                <!-- Recalculate -->
+                <button 
+                    onclick="resetForm()"
+                    class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-2xl hover:bg-gray-200 transition-all"
+                >
+                    🔄 Hitung Ulang
+                </button>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="mt-12 grid md:grid-cols-3 gap-6">
+            <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-rose-50">
+                <div class="text-3xl mb-3">🧬</div>
+                <h3 class="font-bold text-gray-800 mb-2">Metode Kalendar</h3>
+                <p class="text-sm text-gray-500 leading-relaxed">Menghitung masa subur berdasarkan panjang siklus menstruasi Anda. Cocok untuk siklus yang teratur.</p>
+            </div>
+            <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-rose-50">
+                <div class="text-3xl mb-3">🔒</div>
+                <h3 class="font-bold text-gray-800 mb-2">100% Privasi</h3>
+                <p class="text-sm text-gray-500 leading-relaxed">Semua perhitungan dilakukan di browser Anda. Tidak ada data yang dikirim ke server manapun.</p>
+            </div>
+            <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-rose-50">
+                <div class="text-3xl mb-3">📊</div>
+                <h3 class="font-bold text-gray-800 mb-2">Visual Kalender</h3>
+                <p class="text-sm text-gray-500 leading-relaxed">Lihat jadwal masa subur, haid, dan ovulasi dalam tampilan kalender yang mudah dipahami.</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-12 text-center text-sm text-gray-400">
+            <p>Dibuat dengan ❤️ untuk kesehatan perempuan Indonesia</p>
+            <p class="mt-1 text-xs">© 2026 Kalkulator Masa Subur</p>
+        </div>
+    </div>
+
+    <script>
+        // Set default date to today
+        document.getElementById('lastPeriod').valueAsDate = new Date();
+
+        function adjustCycle(delta) {
+            const input = document.getElementById('cycleLength');
+            const val = parseInt(input.value) + delta;
+            if (val >= 20 && val <= 45) input.value = val;
+        }
+
+        function adjustPeriod(delta) {
+            const input = document.getElementById('periodDuration');
+            const val = parseInt(input.value) + delta;
+            if (val >= 2 && val <= 10) input.value = val;
+        }
+
+        function formatDate(date) {
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return date.toLocaleDateString('id-ID', options);
+        }
+
+        function formatDateShort(date) {
+            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        }
+
+        function addDays(date, days) {
+            const result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        }
+
+        function resetForm() {
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('results').innerHTML = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.getElementById('calcForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const lastPeriod = new Date(document.getElementById('lastPeriod').value);
+            const cycleLength = parseInt(document.getElementById('cycleLength').value);
+            const periodDuration = parseInt(document.getElementById('periodDuration').value);
+
+            // Ovulation typically occurs 14 days before next period
+            const ovulationDay = cycleLength - 14;
+            const ovulationDate = addDays(lastPeriod, ovulationDay);
+
+            // Fertile window: 5 days before ovulation + ovulation day + 1 day after
+            const fertileStart = addDays(ovulationDate, -5);
+            const fertileEnd = addDays(ovulationDate, 1);
+
+            // Safe window (after period ends, before fertile window starts)
+            const periodEnd = addDays(lastPeriod, periodDuration - 1);
+            const safeStart1 = addDays(periodEnd, 1);
+            const safeEnd1 = addDays(fertileStart, -1);
+            
+            // Safe window after fertile window until next period
+            const safeStart2 = addDays(fertileEnd, 1);
+            const nextPeriodStart = addDays(lastPeriod, cycleLength);
+            const safeEnd2 = addDays(nextPeriodStart, -1);
+
+            // Display results
+            document.getElementById('ovulationDate').textContent = formatDate(ovulationDate);
+            document.getElementById('fertileWindow').textContent = 
+                `${formatDateShort(fertileStart)} — ${formatDateShort(fertileEnd)}`;
+            
+            let safeText = '';
+            if (safeEnd1 >= safeStart1) {
+                safeText = `${formatDateShort(safeStart1)} — ${formatDateShort(safeEnd1)}`;
+            } else {
+                safeText = '(tidak ada masa aman sebelum ovulasi)';
+            }
+            document.getElementById('safeWindow').textContent = safeText;
+
+            // Next 3 cycles
+            const cyclesDiv = document.getElementById('nextCycles');
+            cyclesDiv.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const cycleStart = addDays(lastPeriod, cycleLength * i);
+                const cycleOvul = addDays(cycleStart, ovulationDay);
+                const cycleFertileStart = addDays(cycleOvul, -5);
+                const cycleFertileEnd = addDays(cycleOvul, 1);
+                
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between bg-white/50 rounded-xl px-4 py-2.5';
+                div.innerHTML = `
+                    <span class="text-sm font-medium text-gray-600">Siklus ${i + 1}</span>
+                    <div class="text-right">
+                        <span class="text-xs text-gray-400">Haid:</span>
+                        <span class="text-sm font-semibold text-rose-500 ml-1">${formatDateShort(cycleStart)}</span>
+                        <span class="text-xs text-gray-400 ml-3">Ovulasi:</span>
+                        <span class="text-sm font-semibold text-amber-500 ml-1">${formatDateShort(cycleOvul)}</span>
+                    </div>
+                `;
+                cyclesDiv.appendChild(div);
+            }
+
+            // Calendar View
+            renderCalendar(lastPeriod, cycleLength, periodDuration, ovulationDay);
+
+            // Show results
+            const results = document.getElementById('results');
+            results.classList.remove('hidden');
+            results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        function renderCalendar(lastPeriod, cycleLength, periodDuration, ovulationDay) {
+            const calendarDiv = document.getElementById('calendarView');
+            calendarDiv.innerHTML = '';
+
+            const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+            
+            // Add day headers
+            dayNames.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'text-center font-bold text-gray-400 py-1';
+                header.textContent = day;
+                calendarDiv.appendChild(header);
+            });
+
+            // Render 3 months
+            for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
+                const monthDate = addDays(lastPeriod, cycleLength * monthOffset);
+                const year = monthDate.getFullYear();
+                const month = monthDate.getMonth();
+                
+                // Month header
+                const monthName = monthDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+                const monthHeader = document.createElement('div');
+                monthHeader.className = 'col-span-7 text-center font-bold text-gray-700 py-2 mt-2 text-sm';
+                monthHeader.textContent = monthName;
+                calendarDiv.appendChild(monthHeader);
+
+                // First day padding
+                const firstDay = new Date(year, month, 1).getDay();
+                for (let i = 0; i < firstDay; i++) {
+                    const empty = document.createElement('div');
+                    calendarDiv.appendChild(empty);
+                }
+
+                // Days in month
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const currentDate = new Date(year, month, day);
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'text-center py-1.5 rounded-lg font-medium';
+                    dayEl.textContent = day;
+
+                    // Calculate which cycle day this is
+                    const diffDays = Math.floor((currentDate - lastPeriod) / (1000 * 60 * 60 * 24));
+                    const cycleDay = ((diffDays % cycleLength) + cycleLength) % cycleLength;
+
+                    if (cycleDay < periodDuration) {
+                        // Period
+                        dayEl.className += ' bg-rose-400 text-white';
+                    } else if (cycleDay === ovulationDay) {
+                        // Ovulation
+                        dayEl.className += ' bg-rose-500 text-white fertile-pulse';
+                    } else if (cycleDay >= ovulationDay - 5 && cycleDay <= ovulationDay + 1) {
+                        // Fertile
+                        dayEl.className += ' bg-amber-400 text-white';
+                    } else {
+                        // Safe
+                        dayEl.className += ' bg-gray-100 text-gray-500';
+                    }
+
+                    calendarDiv.appendChild(dayEl);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
