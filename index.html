@@ -2,403 +2,1878 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Masa Subur — Ketahui Masa Subur Anda</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Kalkulator Masa Subur & Siklus Menstruasi - Akurasi Klinis Ala Flo</title>
+    <meta name="description" content="Kalkulator masa subur dan pelacak siklus menstruasi terinspirasi dari Flo. Menghitung jendela subur, ovulasi, fase siklus, dan peluang kehamilan dengan akurasi klinis kalendar.">
+    
+    <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
                     colors: {
-                        rose: { 50:'#fff1f2',100:'#ffe4e6',200:'#fecdd3',300:'#fda4af',400:'#fb7185',500:'#f43f5e',600:'#e11d48',700:'#be123c',800:'#9f1239',900:'#881337' },
-                        pink: { 50:'#fdf2f8',100:'#fce7f3',200:'#fbcfe8',300:'#f9a8d4',400:'#f472b6',500:'#ec4899',600:'#db2777',700:'#be185d',800:'#9d174d',900:'#831843' },
+                        petal: {
+                            50: '#fff7f9',
+                            100: '#feedf1',
+                            200: '#fedce5',
+                            300: '#fcb9cb',
+                            400: '#f885a5',
+                            500: '#ef5582',
+                            600: '#db3264',
+                            700: '#b91c4d',
+                            800: '#9b1b44',
+                            900: '#831a3d',
+                        },
+                        warm: {
+                            50: '#fffcfb',
+                            100: '#fdf4f0',
+                            200: '#fce7df',
+                            300: '#fad3c5',
+                            700: '#6c4335',
+                            800: '#4a2c22',
+                            900: '#2d1a14',
+                        },
+                        ink: {
+                            primary: '#241b1e',
+                            secondary: '#5a4d53',
+                            muted: '#85757c',
+                            border: '#f2e3e7',
+                        }
+                    },
+                    boxShadow: {
+                        'flo-card': '0 10px 32px -6px rgba(219, 50, 100, 0.08), 0 4px 16px -2px rgba(36, 27, 30, 0.03)',
+                        'flo-hover': '0 16px 40px -4px rgba(219, 50, 100, 0.14), 0 6px 20px -2px rgba(36, 27, 30, 0.04)',
+                        'flo-dial': '0 12px 36px -4px rgba(219, 50, 100, 0.18)',
                     }
                 }
             }
         }
     </script>
+    
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 25%, #fecdd3 50%, #ffe4e6 75%, #fff1f2 100%); }
-        .card-glow { box-shadow: 0 0 40px rgba(244, 63, 94, 0.08), 0 4px 20px rgba(0,0,0,0.04); }
-        .fertile-pulse { animation: fertilePulse 2s ease-in-out infinite; }
-        @keyframes fertilePulse { 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(1.05); opacity:0.9; } }
-        .result-enter { animation: resultSlide 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes resultSlide { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-        .dot-pattern { background-image: radial-gradient(circle, #fda4af 1px, transparent 1px); background-size: 20px 20px; }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.4); cursor: pointer; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #241b1e;
+            background-color: #fff9fa;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(254, 220, 229, 0.45) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(253, 244, 240, 0.6) 0px, transparent 45%),
+                radial-gradient(at 50% 100%, rgba(254, 237, 241, 0.5) 0px, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Dial Animation & Ring */
+        .cycle-ring-circle {
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        /* Smooth tab animations */
+        .tab-indicator {
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Calendar Day hover & select transitions */
+        .cal-day-cell {
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        }
+        .cal-day-cell:active {
+            transform: scale(0.92);
+        }
+
+        /* Custom scrollbar for mobile drawers */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fff0f3;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #f885a5;
+            border-radius: 9999px;
+        }
+
+        /* Pulse for ovulation */
+        @keyframes softGlow {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+            }
+        }
+        .ovulation-glow {
+            animation: softGlow 2.5s infinite;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-card {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+            }
+        }
     </style>
 </head>
-<body class="gradient-bg min-h-screen">
+<body class="selection:bg-petal-200 selection:text-petal-900 pb-16 antialiased">
 
-    <!-- Hero Section -->
-    <div class="relative overflow-hidden">
-        <div class="dot-pattern absolute inset-0 opacity-30"></div>
-        <div class="relative max-w-4xl mx-auto px-4 pt-12 pb-8 text-center">
-            <div class="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm text-rose-600 font-medium mb-6 border border-rose-100">
-                <span class="w-2 h-2 bg-rose-400 rounded-full animate-pulse"></span>
-                Gratis & Privasi Terjaga
-            </div>
-            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
-                Kalkulator <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-500">Masa Subur</span>
-            </h1>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                Hitung masa subur Anda secara akurat menggunakan metode <strong>kalendar</strong>. 
-                Ketahui jendela subur, ovulasi, dan masa aman dalam satu klik.
-            </p>
-        </div>
-    </div>
-
-    <!-- Calculator Card -->
-    <div class="max-w-2xl mx-auto px-4 -mt-2 pb-16">
-        <div class="bg-white rounded-3xl card-glow p-8 md:p-10 border border-rose-50">
-            
-            <!-- Form -->
-            <form id="calcForm" class="space-y-6">
-                
-                <!-- Date of Last Period -->
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-30 bg-white/85 backdrop-blur-md border-b border-petal-100 transition-all">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-petal-600 to-petal-400 flex items-center justify-center text-white shadow-md shadow-petal-300/50">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2C6.5 2 2 6.5 2 12c0 3.8 2.1 7.1 5.3 8.8.7.4 1.5-.1 1.5-.9v-2.3c0-.4.3-.8.7-.9 1.6-.4 3.4-.4 5 0 .4.1.7.5.7.9v2.3c0 .8.8 1.3 1.5.9 3.2-1.7 5.3-5 5.3-8.8 0-5.5-4.5-10-10-10z"></path>
+                        <path d="M12 7c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5z" fill="rgba(255,255,255,0.2)"></path>
+                    </svg>
+                </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        📅 Hari Pertama Haid Terakhir
+                    <span class="font-display font-bold text-lg sm:text-xl text-ink-primary tracking-tight flex items-center gap-1.5">
+                        Luna
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-petal-100 text-petal-700 font-sans">Flo Style</span>
+                    </span>
+                    <p class="text-[11px] text-ink-muted leading-none hidden sm:block">Kalkulator Masa Subur & Siklus Hormonal</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button 
+                    type="button" 
+                    id="btnOpenInfoModal"
+                    aria-label="Informasi Medis & Privasi"
+                    class="h-10 px-3.5 rounded-xl border border-petal-200 bg-petal-50 hover:bg-petal-100 text-petal-800 text-xs font-semibold flex items-center gap-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-petal-400"
+                >
+                    <svg class="w-4 h-4 text-petal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span>Dasar Klinis</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+        
+        <!-- Hero Tagline -->
+        <section class="text-center max-w-2xl mx-auto mb-8">
+            <div class="inline-flex items-center gap-2 bg-white/90 border border-petal-200 px-3.5 py-1.5 rounded-full shadow-sm mb-3">
+                <span class="w-2 h-2 rounded-full bg-petal-500 animate-pulse"></span>
+                <span class="text-xs font-medium text-petal-800">Privasi 100% Aman: Data Hanya Disimpan di Perangkat Anda</span>
+            </div>
+            <h1 class="font-display text-3xl sm:text-4xl font-extrabold text-ink-primary tracking-tight leading-tight">
+                Kenali Siklus Tubuh & <br class="hidden sm:inline">
+                <span class="bg-gradient-to-r from-petal-600 via-petal-500 to-warm-700 bg-clip-text text-transparent">Masa Subur Anda</span>
+            </h1>
+            <p class="mt-2.5 text-sm sm:text-base text-ink-secondary leading-relaxed">
+                Dirancang dengan pendekatan klinis kalendar (Ogino-Knaus & Konsensus Wilcox). Dapatkan estimasi ovulasi, peluang konsepsi harian, dan panduan sinyal tubuh Anda.
+            </p>
+        </section>
+
+        <!-- Calculator Input Card -->
+        <section class="bg-white rounded-3xl p-5 sm:p-8 shadow-flo-card border border-petal-100 mb-8 transition-all">
+            <div class="flex items-center justify-between pb-4 mb-5 border-b border-petal-100">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🌸</span>
+                    <h2 class="font-display font-bold text-lg text-ink-primary">Informasi Menstruasi Anda</h2>
+                </div>
+                <button 
+                    type="button" 
+                    id="btnQuickFill"
+                    class="text-xs font-medium text-petal-700 hover:text-petal-900 bg-petal-50 hover:bg-petal-100 px-3 py-1.5 rounded-lg transition-colors"
+                    title="Gunakan contoh data siklus teratur 28 hari"
+                >
+                    Contoh Standar (28 Hari)
+                </button>
+            </div>
+
+            <form id="fertilityForm" class="space-y-6" novalidate>
+                
+                <!-- 1. Last Menstrual Period Date -->
+                <div>
+                    <label for="lastPeriodInput" class="block text-sm font-semibold text-ink-primary mb-2 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5">
+                            <span class="text-petal-500">📅</span> Hari Pertama Haid Terakhir (HPHT)
+                        </span>
+                        <span class="text-xs font-normal text-ink-muted">Wajib diisi</span>
                     </label>
                     <input 
                         type="date" 
-                        id="lastPeriod" 
+                        id="lastPeriodInput" 
                         required
-                        class="w-full px-4 py-3.5 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-gray-800 font-medium focus:border-rose-400 focus:ring-4 focus:ring-rose-100 outline-none transition-all text-base"
+                        class="w-full px-4 py-3.5 rounded-2xl border-2 border-petal-100 bg-petal-50/40 text-ink-primary font-semibold text-base focus:border-petal-500 focus:bg-white focus:ring-4 focus:ring-petal-100 outline-none transition-all"
                     >
+                    
+                    <!-- Quick Date Chips -->
+                    <div class="flex flex-wrap items-center gap-2 mt-2.5">
+                        <span class="text-xs text-ink-muted mr-1">Pilih cepat:</span>
+                        <button type="button" class="quick-chip text-xs px-3 py-1.5 rounded-full bg-petal-50 text-petal-800 border border-petal-200 hover:bg-petal-100 font-medium transition-colors" data-days="0">Hari ini</button>
+                        <button type="button" class="quick-chip text-xs px-3 py-1.5 rounded-full bg-petal-50 text-petal-800 border border-petal-200 hover:bg-petal-100 font-medium transition-colors" data-days="3">3 hari lalu</button>
+                        <button type="button" class="quick-chip text-xs px-3 py-1.5 rounded-full bg-petal-50 text-petal-800 border border-petal-200 hover:bg-petal-100 font-medium transition-colors" data-days="7">7 hari lalu</button>
+                        <button type="button" class="quick-chip text-xs px-3 py-1.5 rounded-full bg-petal-50 text-petal-800 border border-petal-200 hover:bg-petal-100 font-medium transition-colors" data-days="14">14 hari lalu</button>
+                    </div>
                 </div>
 
-                <!-- Cycle Length -->
+                <!-- 2. Cycle Regularity Mode Selector -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        🔄 Panjang Siklus Menstruasi (hari)
+                    <label class="block text-sm font-semibold text-ink-primary mb-2 flex items-center gap-1.5">
+                        <span class="text-petal-500">🔄</span> Pola Siklus Menstruasi Anda
                     </label>
-                    <div class="flex items-center gap-4">
-                        <button type="button" onclick="adjustCycle(-1)" class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 font-bold text-xl hover:bg-rose-100 transition-colors flex items-center justify-center border border-rose-100">−</button>
+                    <div class="grid grid-cols-2 gap-3 p-1.5 bg-petal-50/60 rounded-2xl border border-petal-100">
+                        <button 
+                            type="button" 
+                            id="modeRegularBtn" 
+                            class="py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 bg-white text-petal-700 shadow-sm border border-petal-200/60"
+                        >
+                            <svg class="w-4 h-4 text-petal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            Siklus Teratur
+                        </button>
+                        <button 
+                            type="button" 
+                            id="modeVariableBtn" 
+                            class="py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 text-ink-secondary hover:text-ink-primary"
+                        >
+                            <svg class="w-4 h-4 text-ink-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                            </svg>
+                            Siklus Bervariasi
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Cycle Length Inputs (Toggled by Mode) -->
+                <!-- Mode A: Regular Cycle Length -->
+                <div id="regularCycleGroup" class="space-y-2">
+                    <label for="cycleLengthInput" class="block text-sm font-semibold text-ink-primary flex items-center justify-between">
+                        <span>Rata-rata Panjang Siklus</span>
+                        <span class="text-xs font-normal text-ink-muted">Normal: 21 - 35 hari</span>
+                    </label>
+                    <div class="flex items-center gap-3">
+                        <button 
+                            type="button" 
+                            id="btnCycleMinus" 
+                            aria-label="Kurangi panjang siklus 1 hari"
+                            class="w-12 h-12 rounded-2xl bg-petal-50 text-petal-700 font-bold text-xl hover:bg-petal-100 active:scale-95 transition-all flex items-center justify-center border border-petal-200"
+                        >
+                            −
+                        </button>
                         <div class="flex-1 relative">
                             <input 
                                 type="number" 
-                                id="cycleLength" 
+                                id="cycleLengthInput" 
                                 value="28" 
                                 min="20" 
                                 max="45"
-                                class="w-full px-4 py-3.5 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-gray-800 font-bold text-xl text-center focus:border-rose-400 focus:ring-4 focus:ring-rose-100 outline-none transition-all"
+                                class="w-full px-4 py-3 rounded-2xl border-2 border-petal-100 bg-petal-50/30 text-ink-primary font-bold text-center text-xl focus:border-petal-500 focus:bg-white focus:ring-4 focus:ring-petal-100 outline-none transition-all"
                             >
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">hari</span>
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-ink-muted">hari</span>
                         </div>
-                        <button type="button" onclick="adjustCycle(1)" class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 font-bold text-xl hover:bg-rose-100 transition-colors flex items-center justify-center border border-rose-100">+</button>
+                        <button 
+                            type="button" 
+                            id="btnCyclePlus" 
+                            aria-label="Tambah panjang siklus 1 hari"
+                            class="w-12 h-12 rounded-2xl bg-petal-50 text-petal-700 font-bold text-xl hover:bg-petal-100 active:scale-95 transition-all flex items-center justify-center border border-petal-200"
+                        >
+                            +
+                        </button>
                     </div>
-                    <p class="text-xs text-gray-400 mt-2 ml-1">Normal: 21–35 hari. Rata-rata: 28 hari</p>
                 </div>
 
-                <!-- Period Duration -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        🩸 Lama Haid (hari)
+                <!-- Mode B: Variable Cycle Range (Shortest & Longest) -->
+                <div id="variableCycleGroup" class="hidden space-y-3">
+                    <p class="text-xs text-ink-secondary bg-petal-50/70 p-3 rounded-xl border border-petal-100">
+                        Metode Ogino-Knaus memperhitungkan variasi terpendek dan terpanjang selama 6 bulan terakhir untuk memperluas estimasi jendela subur secara aman.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="cycleMinInput" class="block text-xs font-semibold text-ink-primary mb-1.5">Siklus Terpendek (hari)</label>
+                            <input 
+                                type="number" 
+                                id="cycleMinInput" 
+                                value="26" 
+                                min="20" 
+                                max="40"
+                                class="w-full px-4 py-3 rounded-2xl border-2 border-petal-100 bg-petal-50/30 text-ink-primary font-bold text-center text-lg focus:border-petal-500 focus:bg-white outline-none"
+                            >
+                        </div>
+                        <div>
+                            <label for="cycleMaxInput" class="block text-xs font-semibold text-ink-primary mb-1.5">Siklus Terpanjang (hari)</label>
+                            <input 
+                                type="number" 
+                                id="cycleMaxInput" 
+                                value="32" 
+                                min="22" 
+                                max="50"
+                                class="w-full px-4 py-3 rounded-2xl border-2 border-petal-100 bg-petal-50/30 text-ink-primary font-bold text-center text-lg focus:border-petal-500 focus:bg-white outline-none"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Period Duration (Lama Haid) -->
+                <div class="space-y-2">
+                    <label for="periodDurationInput" class="block text-sm font-semibold text-ink-primary flex items-center justify-between">
+                        <span class="flex items-center gap-1.5">
+                            <span class="text-petal-500">🩸</span> Lama Pendarahan Haid
+                        </span>
+                        <span class="text-xs font-normal text-ink-muted">Normal: 3 - 7 hari</span>
                     </label>
-                    <div class="flex items-center gap-4">
-                        <button type="button" onclick="adjustPeriod(-1)" class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 font-bold text-xl hover:bg-rose-100 transition-colors flex items-center justify-center border border-rose-100">−</button>
+                    <div class="flex items-center gap-3">
+                        <button 
+                            type="button" 
+                            id="btnPeriodMinus" 
+                            aria-label="Kurangi lama haid 1 hari"
+                            class="w-12 h-12 rounded-2xl bg-petal-50 text-petal-700 font-bold text-xl hover:bg-petal-100 active:scale-95 transition-all flex items-center justify-center border border-petal-200"
+                        >
+                            −
+                        </button>
                         <div class="flex-1 relative">
                             <input 
                                 type="number" 
-                                id="periodDuration" 
-                                value="6" 
+                                id="periodDurationInput" 
+                                value="5" 
                                 min="2" 
                                 max="10"
-                                class="w-full px-4 py-3.5 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-gray-800 font-bold text-xl text-center focus:border-rose-400 focus:ring-4 focus:ring-rose-100 outline-none transition-all"
+                                class="w-full px-4 py-3 rounded-2xl border-2 border-petal-100 bg-petal-50/30 text-ink-primary font-bold text-center text-xl focus:border-petal-500 focus:bg-white focus:ring-4 focus:ring-petal-100 outline-none transition-all"
                             >
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">hari</span>
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-ink-muted">hari</span>
                         </div>
-                        <button type="button" onclick="adjustPeriod(1)" class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 font-bold text-xl hover:bg-rose-100 transition-colors flex items-center justify-center border border-rose-100">+</button>
+                        <button 
+                            type="button" 
+                            id="btnPeriodPlus" 
+                            aria-label="Tambah lama haid 1 hari"
+                            class="w-12 h-12 rounded-2xl bg-petal-50 text-petal-700 font-bold text-xl hover:bg-petal-100 active:scale-95 transition-all flex items-center justify-center border border-petal-200"
+                        >
+                            +
+                        </button>
                     </div>
-                    <p class="text-xs text-gray-400 mt-2 ml-1">Normal: 3–7 hari</p>
                 </div>
 
-                <!-- Submit Button -->
+                <!-- 5. Advanced Clinical Setting: Luteal Phase Accordion -->
+                <div class="pt-2 border-t border-petal-100">
+                    <button 
+                        type="button" 
+                        id="toggleAdvancedBtn"
+                        class="w-full py-2 flex items-center justify-between text-xs font-semibold text-petal-700 hover:text-petal-900 transition-colors focus:outline-none"
+                        aria-expanded="false"
+                    >
+                        <span class="flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-petal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            Pengaturan Lanjutan: Panjang Fase Luteal
+                        </span>
+                        <span id="accordionArrow" class="text-sm transform transition-transform duration-200">▾</span>
+                    </button>
+                    
+                    <div id="advancedContent" class="hidden mt-3 p-4 bg-petal-50/70 rounded-2xl border border-petal-100 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="text-xs font-bold text-ink-primary">Fase Luteal Personal</h4>
+                                <p class="text-[11px] text-ink-secondary mt-0.5">Waktu dari pelepasan ovum sampai haid berikutnya. Rata-rata normal klinis: 14 hari (rentang 11 - 16 hari).</p>
+                            </div>
+                            <div class="w-24">
+                                <input 
+                                    type="number" 
+                                    id="lutealPhaseInput" 
+                                    value="14" 
+                                    min="10" 
+                                    max="18"
+                                    class="w-full px-2.5 py-2 rounded-xl border border-petal-200 bg-white text-center font-bold text-ink-primary text-sm focus:border-petal-500 outline-none"
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Validation Error Message Area (R-27 Error State) -->
+                <div id="formErrorMessage" class="hidden p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
+                    <span class="text-base">⚠️</span>
+                    <span id="formErrorText">Data tanggal tidak valid. Silakan periksa kembali.</span>
+                </div>
+
+                <!-- Action Button -->
                 <button 
                     type="submit" 
-                    class="w-full py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold text-lg rounded-2xl hover:from-rose-600 hover:to-pink-600 transition-all transform hover:scale-[1.01] shadow-lg shadow-rose-200 active:scale-[0.99]"
+                    id="submitBtn"
+                    class="w-full py-4 px-6 bg-gradient-to-r from-petal-600 via-petal-500 to-petal-600 hover:from-petal-700 hover:to-petal-700 text-white font-display font-bold text-base sm:text-lg rounded-2xl shadow-lg shadow-petal-300/60 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                    ✨ Hitung Masa Subur
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="m9 12 2 2 4-4"></path>
+                    </svg>
+                    <span>Analisis Siklus & Masa Subur</span>
                 </button>
             </form>
+        </section>
 
-            <!-- Results (hidden by default) -->
-            <div id="results" class="hidden mt-8 space-y-4">
+        <!-- RESULTS SECTION (FLO DASHBOARD EXPERIENCE) -->
+        <section id="resultsSection" class="space-y-8 transition-all duration-300">
+            
+            <!-- SECTION 1: FLO DAILY CYCLE DIAL (CENTERPIECE) -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-petal-100 text-center relative overflow-hidden">
+                <!-- Background decorative wash -->
+                <div class="absolute -right-16 -top-16 w-48 h-48 rounded-full bg-petal-100/60 blur-2xl pointer-events-none"></div>
+                <div class="absolute -left-16 -bottom-16 w-48 h-48 rounded-full bg-warm-100/60 blur-2xl pointer-events-none"></div>
+
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-petal-100 text-petal-800 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-petal-500"></span>
+                            Status Hari Ini
+                        </span>
+                        <span id="currentDateBadge" class="text-xs font-medium text-ink-muted"></span>
+                    </div>
+
+                    <!-- Flo SVG Cycle Ring -->
+                    <div class="relative w-64 h-64 sm:w-72 sm:h-72 mx-auto my-2 flex items-center justify-center">
+                        <svg class="w-full h-full" viewBox="0 0 240 240">
+                            <!-- Background Track -->
+                            <circle 
+                                cx="120" 
+                                cy="120" 
+                                r="98" 
+                                fill="none" 
+                                stroke="#fdecf0" 
+                                stroke-width="16"
+                            />
+                            <!-- Progress Arc -->
+                            <circle 
+                                id="cycleProgressCircle"
+                                class="cycle-ring-circle"
+                                cx="120" 
+                                cy="120" 
+                                r="98" 
+                                fill="none" 
+                                stroke="url(#floGradient)" 
+                                stroke-width="16"
+                                stroke-linecap="round"
+                                stroke-dasharray="615.75"
+                                stroke-dashoffset="615.75"
+                            />
+                            <!-- Gradients Definition -->
+                            <defs>
+                                <linearGradient id="floGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#db3264" />
+                                    <stop offset="50%" stop-color="#ef5582" />
+                                    <stop offset="100%" stop-color="#f59e0b" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+
+                        <!-- Content inside the Ring -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center px-4">
+                            <span class="text-[11px] uppercase tracking-wider font-semibold text-ink-muted" id="dialCycleSubtitle">Siklus Menstruasi</span>
+                            <span class="font-display text-2xl sm:text-3xl font-extrabold text-ink-primary my-1" id="dialCycleDayText">Hari ke-14</span>
+                            
+                            <!-- Phase Badge -->
+                            <div class="my-1">
+                                <span id="dialPhaseBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                                    Fase Ovulasi
+                                </span>
+                            </div>
+
+                            <!-- Pregnancy Chance Indicator -->
+                            <div class="mt-2 text-center">
+                                <span class="text-[11px] text-ink-muted block">Peluang Hamil:</span>
+                                <span id="dialPregnancyChance" class="text-xs sm:text-sm font-extrabold text-petal-700">Puncak (Sangat Tinggi)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cycle Countdown & Quick Summary -->
+                    <div class="max-w-md mx-auto mt-3 p-3.5 rounded-2xl bg-petal-50/70 border border-petal-100 text-xs sm:text-sm text-ink-secondary">
+                        <p id="dialSummaryNote" class="leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: FOUR KEY CLINICAL METRICS (CARDS) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
-                <!-- Ovulation Date -->
-                <div class="result-enter bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-6 border border-rose-100">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="text-2xl">🥚</span>
-                        <h3 class="font-bold text-gray-800">Hari Perkiraan Ovulasi</h3>
+                <!-- 1. Ovulation Date -->
+                <div class="bg-white rounded-2xl p-5 shadow-flo-card border border-petal-100 hover:shadow-flo-hover transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg mb-3">
+                        🌟
                     </div>
-                    <p id="ovulationDate" class="text-2xl font-extrabold text-rose-600"></p>
-                    <p class="text-sm text-gray-500 mt-1">Ini adalah hari paling subur dalam siklus Anda</p>
+                    <span class="text-xs font-bold text-ink-muted uppercase tracking-wider block mb-1">Perkiraan Ovulasi</span>
+                    <p id="cardOvulationDate" class="text-base sm:text-lg font-display font-extrabold text-amber-700 leading-tight"></p>
+                    <p class="text-[11px] text-ink-secondary mt-1.5">Sel telur matang dilepaskan. Peluang konsepsi berada pada titik tertinggi.</p>
                 </div>
 
-                <!-- Fertile Window -->
-                <div class="result-enter bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100" style="animation-delay: 0.1s">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="text-2xl">🌟</span>
-                        <h3 class="font-bold text-gray-800">Jendela Subur</h3>
+                <!-- 2. Fertile Window -->
+                <div class="bg-white rounded-2xl p-5 shadow-flo-card border border-petal-100 hover:shadow-flo-hover transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-petal-100 text-petal-700 flex items-center justify-center text-lg mb-3">
+                        🌸
                     </div>
-                    <p id="fertileWindow" class="text-xl font-bold text-amber-600"></p>
-                    <p class="text-sm text-gray-500 mt-1">Periode dengan peluang kehamilan tertinggi</p>
+                    <span class="text-xs font-bold text-ink-muted uppercase tracking-wider block mb-1">Jendela Subur</span>
+                    <p id="cardFertileWindow" class="text-base sm:text-lg font-display font-extrabold text-petal-700 leading-tight"></p>
+                    <p class="text-[11px] text-ink-secondary mt-1.5">Rentang 6 hari fertilitas tinggi saat sperma dan ovum berpeluang bertemu.</p>
                 </div>
 
-                <!-- Safe Window -->
-                <div class="result-enter bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100" style="animation-delay: 0.2s">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="text-2xl">🛡️</span>
-                        <h3 class="font-bold text-gray-800">Masa Kurang Subur (Relatif Aman)</h3>
+                <!-- 3. Safe Window -->
+                <div class="bg-white rounded-2xl p-5 shadow-flo-card border border-petal-100 hover:shadow-flo-hover transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg mb-3">
+                        🛡️
                     </div>
-                    <p id="safeWindow" class="text-lg font-bold text-emerald-600"></p>
-                    <p class="text-sm text-gray-500 mt-1">Peluang kehamilan lebih rendah (bukan 0%)</p>
+                    <span class="text-xs font-bold text-ink-muted uppercase tracking-wider block mb-1">Masa Kurang Subur</span>
+                    <p id="cardSafeWindow" class="text-base sm:text-lg font-display font-extrabold text-emerald-800 leading-tight"></p>
+                    <p class="text-[11px] text-ink-secondary mt-1.5">Peluang pembuahan relatif rendah sebelum ovulasi dan selama fase luteal.</p>
                 </div>
 
-                <!-- Next 3 Cycles -->
-                <div class="result-enter bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-6 border border-violet-100" style="animation-delay: 0.3s">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="text-2xl">📅</span>
-                        <h3 class="font-bold text-gray-800">3 Siklus ke Depan</h3>
+                <!-- 4. Next Period & Pregnancy Test -->
+                <div class="bg-white rounded-2xl p-5 shadow-flo-card border border-petal-100 hover:shadow-flo-hover transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center text-lg mb-3">
+                        🧪
                     </div>
-                    <div id="nextCycles" class="space-y-2 mt-3"></div>
+                    <span class="text-xs font-bold text-ink-muted uppercase tracking-wider block mb-1">Haid Berikutnya & Tes</span>
+                    <p id="cardNextPeriod" class="text-base sm:text-lg font-display font-extrabold text-purple-800 leading-tight"></p>
+                    <p id="cardPregnancyTest" class="text-[11px] text-ink-secondary mt-1.5"></p>
+                </div>
+            </div>
+
+            <!-- SECTION 3: INTERACTIVE FLO-STYLE MONTHLY CALENDAR -->
+            <div class="bg-white rounded-3xl p-5 sm:p-8 shadow-flo-card border border-petal-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-petal-100">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🗓️</span>
+                            <h3 class="font-display font-bold text-lg sm:text-xl text-ink-primary">Kalender Siklus Interaktif</h3>
+                        </div>
+                        <p class="text-xs text-ink-secondary mt-0.5">Ketuk tanggal manapun untuk melihat peluang konsepsi dan sinyal alami tubuh.</p>
+                    </div>
+
+                    <!-- Calendar Controls -->
+                    <div class="flex items-center gap-2 self-start sm:self-auto">
+                        <button 
+                            type="button" 
+                            id="btnCalPrev" 
+                            aria-label="Bulan Sebelumnya"
+                            class="p-2.5 rounded-xl border border-petal-200 bg-petal-50 hover:bg-petal-100 text-petal-800 transition-colors"
+                        >
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <span id="calCurrentMonthTitle" class="text-xs sm:text-sm font-bold text-ink-primary px-2 min-w-[130px] text-center"></span>
+                        <button 
+                            type="button" 
+                            id="btnCalNext" 
+                            aria-label="Bulan Berikutnya"
+                            class="p-2.5 rounded-xl border border-petal-200 bg-petal-50 hover:bg-petal-100 text-petal-800 transition-colors"
+                        >
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                        <button 
+                            type="button" 
+                            id="btnCalToday" 
+                            class="text-xs font-semibold px-3 py-2 rounded-xl bg-petal-100 text-petal-800 hover:bg-petal-200 transition-colors"
+                        >
+                            Hari Ini
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Calendar View -->
-                <div class="result-enter bg-white rounded-2xl p-6 border border-gray-100 shadow-sm" style="animation-delay: 0.4s">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="text-2xl">🗓️</span>
-                        <h3 class="font-bold text-gray-800">Kalender 3 Bulan</h3>
-                    </div>
-                    <div id="calendarView" class="grid grid-cols-7 gap-1 text-xs"></div>
-                    <div class="flex flex-wrap gap-4 mt-4 text-xs">
-                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-400"></span> Haid</div>
-                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-400"></span> Subur</div>
-                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500 fertile-pulse"></span> Ovulasi</div>
-                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-gray-200"></span> Kurang Subur</div>
-                    </div>
+                <!-- Day Headers -->
+                <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-semibold text-ink-muted pt-4 pb-2">
+                    <div class="text-rose-500">Min</div>
+                    <div>Sen</div>
+                    <div>Sel</div>
+                    <div>Rab</div>
+                    <div>Kam</div>
+                    <div>Jum</div>
+                    <div class="text-petal-700">Sab</div>
                 </div>
 
-                <!-- Disclaimer -->
-                <div class="result-enter bg-gray-50 rounded-2xl p-4 border border-gray-100 text-center" style="animation-delay: 0.5s">
-                    <p class="text-xs text-gray-400 leading-relaxed">
-                        ⚠️ Kalkulator ini menggunakan metode kalendar dan <strong>bukan pengganti konsultasi medis</strong>. 
-                        Hasilnya adalah perkiraan. Untuk hasil lebih akurat, gunakan bersama metode lain (suhu tubuh, lendir serviks, dll).
+                <!-- Calendar Days Grid -->
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2">
+                    <!-- Dynamic rendering by JS -->
+                </div>
+
+                <!-- Calendar Legend -->
+                <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-6 pt-5 mt-4 border-t border-petal-100 text-xs text-ink-secondary">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full bg-petal-500"></span>
+                        <span>Menstruasi</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full bg-amber-200 border border-amber-400"></span>
+                        <span>Jendela Subur</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[9px] font-bold">★</span>
+                        <span>Ovulasi Puncak</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full bg-purple-100 border border-purple-300"></span>
+                        <span>Fase Luteal</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: SELECTED DAY CLINICAL INSIGHT & BODY SIGNS (FLO BODY LITERACY) -->
+            <div id="selectedDayDetailCard" class="bg-gradient-to-br from-white to-petal-50/60 rounded-3xl p-6 sm:p-8 shadow-flo-card border border-petal-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-petal-100">
+                    <div>
+                        <span class="text-xs font-bold text-petal-700 uppercase tracking-wider">Detail Tanggal yang Dipilih</span>
+                        <h4 id="selectedDayDate" class="font-display text-xl font-bold text-ink-primary"></h4>
+                    </div>
+                    <div id="selectedDayBadgeContainer"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    
+                    <!-- Conception Chance -->
+                    <div class="bg-white/90 p-4 rounded-2xl border border-petal-100 shadow-sm">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-lg">📈</span>
+                            <h5 class="text-xs font-bold text-ink-primary uppercase">Peluang Konsepsi Klinis</h5>
+                        </div>
+                        <p id="selectedDayChanceText" class="text-sm font-semibold text-petal-700"></p>
+                        <p id="selectedDayChanceDesc" class="text-xs text-ink-secondary mt-1 leading-relaxed"></p>
+                    </div>
+
+                    <!-- Cervical Mucus & Bodily Symptoms -->
+                    <div class="bg-white/90 p-4 rounded-2xl border border-petal-100 shadow-sm">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-lg">💧</span>
+                            <h5 class="text-xs font-bold text-ink-primary uppercase">Tanda Lendir Serviks</h5>
+                        </div>
+                        <p id="selectedDayMucusTitle" class="text-sm font-semibold text-ink-primary"></p>
+                        <p id="selectedDayMucusDesc" class="text-xs text-ink-secondary mt-1 leading-relaxed"></p>
+                    </div>
+
+                    <!-- Hormonal & Temperature Sensation -->
+                    <div class="bg-white/90 p-4 rounded-2xl border border-petal-100 shadow-sm">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-lg">🌡️</span>
+                            <h5 class="text-xs font-bold text-ink-primary uppercase">Suhu Basal & Hormon</h5>
+                        </div>
+                        <p id="selectedDayHormoneTitle" class="text-sm font-semibold text-ink-primary"></p>
+                        <p id="selectedDayHormoneDesc" class="text-xs text-ink-secondary mt-1 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: FOUR PHASES OF THE MENSTRUAL CYCLE (VISUAL JOURNEY) -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-petal-100">
+                <div class="mb-5">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">🧬</span>
+                        <h3 class="font-display font-bold text-lg sm:text-xl text-ink-primary">4 Fase Siklus Hormonal Tubuh</h3>
+                    </div>
+                    <p class="text-xs text-ink-secondary mt-0.5">Memahami perubahan hormonal di setiap fase membantu perencanaan program hamil maupun kesehatan harian.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Phase 1 -->
+                    <div class="p-4 rounded-2xl bg-petal-50/50 border border-petal-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-petal-100 text-petal-800">Fase 1</span>
+                            <span class="text-xs font-semibold text-petal-700">Hari 1 - 5</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-ink-primary">Menstruasi</h4>
+                        <p class="text-xs text-ink-secondary mt-1.5 leading-relaxed">
+                            Lapisan dinding rahim meluruh. Estrogen dan progesteron berada di titik terendah. Butuh istirahat ekstra dan asupan zat besi.
+                        </p>
+                    </div>
+
+                    <!-- Phase 2 -->
+                    <div class="p-4 rounded-2xl bg-rose-50/40 border border-rose-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-800">Fase 2</span>
+                            <span class="text-xs font-semibold text-rose-700">Hari 6 - 13</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-ink-primary">Fase Folikular</h4>
+                        <p class="text-xs text-ink-secondary mt-1.5 leading-relaxed">
+                            Hormon FSH mematangkan folikel di ovarium. Estrogen meningkat, memicu energi tubuh bertambah dan cairan serviks mulai terbentuk.
+                        </p>
+                    </div>
+
+                    <!-- Phase 3 -->
+                    <div class="p-4 rounded-2xl bg-amber-50/50 border border-amber-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900">Fase 3</span>
+                            <span class="text-xs font-semibold text-amber-700">Hari ke-14</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-amber-900">Fase Ovulasi</h4>
+                        <p class="text-xs text-ink-secondary mt-1.5 leading-relaxed">
+                            Lonjakan hormon LH memicu sel telur matang dilepaskan ke tuba fallopi. Waktu paling subur dalam sebulan dengan lendir tipe putih telur.
+                        </p>
+                    </div>
+
+                    <!-- Phase 4 -->
+                    <div class="p-4 rounded-2xl bg-purple-50/50 border border-purple-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-purple-100 text-purple-900">Fase 4</span>
+                            <span class="text-xs font-semibold text-purple-700">Hari 15 - 28</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-ink-primary">Fase Luteal</h4>
+                        <p class="text-xs text-ink-secondary mt-1.5 leading-relaxed">
+                            Korpus luteum memproduksi progesteron. Suhu basal tubuh naik. Jika tidak ada pembuahan, hormon turun menuju siklus berikutnya.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 6: FUTURE 6-MONTH CYCLE PROJECTION -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-petal-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🔮</span>
+                            <h3 class="font-display font-bold text-lg sm:text-xl text-ink-primary">Proyeksi 6 Siklus ke Depan</h3>
+                        </div>
+                        <p class="text-xs text-ink-secondary mt-0.5">Membantu Anda merencanakan program kehamilan, liburan, atau acara penting.</p>
+                    </div>
+
+                    <button 
+                        type="button" 
+                        id="btnCopySummary"
+                        class="self-start sm:self-auto px-4 py-2 rounded-xl bg-petal-50 hover:bg-petal-100 text-petal-800 border border-petal-200 text-xs font-semibold flex items-center gap-1.5 transition-all"
+                    >
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span id="copyBtnLabel">Salin Ringkasan</span>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead>
+                            <tr class="border-b border-petal-100 text-ink-muted text-[11px] uppercase tracking-wider">
+                                <th class="pb-3 font-semibold">Siklus</th>
+                                <th class="pb-3 font-semibold">Perkiraan Haid</th>
+                                <th class="pb-3 font-semibold">Jendela Subur</th>
+                                <th class="pb-3 font-semibold">Hari Ovulasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="futureCyclesTableBody" class="divide-y divide-petal-50">
+                            <!-- Populated dynamically by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECTION 7: ACTIONS & MEDICAL DISCLAIMER -->
+            <div class="text-center space-y-4 pt-2">
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    <button 
+                        type="button" 
+                        id="btnPrintPage"
+                        class="px-5 py-2.5 rounded-2xl bg-white border border-petal-200 text-ink-primary hover:bg-petal-50 text-xs font-semibold shadow-sm transition-all flex items-center gap-2"
+                    >
+                        <svg class="w-4 h-4 text-petal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                            <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                        Cetak / Simpan Laporan
+                    </button>
+                    <button 
+                        type="button" 
+                        id="btnResetCalculation"
+                        class="px-5 py-2.5 rounded-2xl bg-petal-50 border border-petal-200 text-petal-800 hover:bg-petal-100 text-xs font-semibold transition-all flex items-center gap-2"
+                    >
+                        <svg class="w-4 h-4 text-petal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                            <path d="M21 3v5h-5"></path>
+                            <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                            <path d="M3 21v-5h5"></path>
+                        </svg>
+                        Atur Ulang Data
+                    </button>
+                </div>
+
+                <div class="max-w-2xl mx-auto p-4 rounded-2xl bg-petal-50/50 border border-petal-100 text-left">
+                    <p class="text-xs text-ink-muted leading-relaxed">
+                        <strong class="text-ink-secondary">Pemberitahuan Medis:</strong> Kalkulator ini menggunakan metode kalendar klinis sebagai alat bantu estimasi statistik dan tidak menggantikan konsultasi langsung dengan dokter spesialis obstetri dan ginekologi (Sp.OG). Variasi hormonal alami, stres fisik/emosional, atau kondisi medis seperti PCOS dapat mengubah jadwal ovulasi riil.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FLO-STYLE INFO MODAL (DASAR KLINIS & PRIVASI) -->
+    <div id="infoModal" class="fixed inset-0 z-50 bg-ink-primary/40 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-all" role="dialog" aria-modal="true">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-petal-100 transform transition-all max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-petal-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-petal-100 text-petal-700 flex items-center justify-center text-sm font-bold">🩺</div>
+                    <h3 class="font-display font-bold text-lg text-ink-primary">Metodologi Klinis & Privasi</h3>
+                </div>
+                <button 
+                    type="button" 
+                    id="btnCloseInfoModal"
+                    aria-label="Tutup jendela info"
+                    class="w-8 h-8 rounded-full bg-petal-50 text-petal-800 hover:bg-petal-100 flex items-center justify-center text-base font-bold transition-colors"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs sm:text-sm text-ink-secondary leading-relaxed">
+                <div>
+                    <h4 class="font-bold text-ink-primary mb-1">1. Dasar Perhitungan Kalendar Klinis</h4>
+                    <p>
+                        Algoritma menggunakan kombinasi metode <strong>Ogino-Knaus</strong> dan konsensus penelitian fertilitas <strong>Wilcox et al. (The New England Journal of Medicine)</strong>:
+                    </p>
+                    <ul class="list-disc pl-5 mt-1.5 space-y-1 text-ink-secondary">
+                        <li><strong>Daya hidup sperma:</strong> Hingga 5 hari di dalam lendir serviks yang subur.</li>
+                        <li><strong>Daya hidup sel telur:</strong> Hanya 12 hingga 24 jam setelah dikeluarkan dari folikel.</li>
+                        <li><strong>Jendela subur:</strong> 5 hari menjelang ovulasi ditambah hari ovulasi itu sendiri (total 6 hari biologis).</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-ink-primary mb-1">2. Fleksibilitas Fase Luteal</h4>
+                    <p>
+                        Sebagian besar kalkulator standar mematok fase luteal secara kaku pada 14 hari. Luna menyediakan opsi penyesuaian fase luteal (11 - 16 hari) untuk pengguna yang mengetahui durasi fase lutealnya berdasarkan pencatatan suhu basal tubuh.
                     </p>
                 </div>
 
-                <!-- Recalculate -->
+                <div>
+                    <h4 class="font-bold text-ink-primary mb-1">3. Siklus Bervariasi (Ogino-Knaus)</h4>
+                    <p>
+                        Jika siklus Anda bervariasi antara terpendek dan terpanjang, hari subur paling awal dihitung dari (siklus terpendek - 18 hari) dan hari subur paling akhir dihitung dari (siklus terpanjang - 11 hari).
+                    </p>
+                </div>
+
+                <div class="p-3 bg-petal-50 rounded-xl border border-petal-100">
+                    <h4 class="font-bold text-petal-800 mb-1 flex items-center gap-1.5">
+                        <span>🔒</span> Jaminan Privasi Penuh
+                    </h4>
+                    <p class="text-xs text-petal-900">
+                        Tidak ada satu pun tanggal atau riwayat kesehatan Anda yang dikirim ke server luar. Seluruh komputasi berjalan 100% secara lokal di browser Anda.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-3 border-t border-petal-100 flex justify-end">
                 <button 
-                    onclick="resetForm()"
-                    class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-2xl hover:bg-gray-200 transition-all"
+                    type="button" 
+                    id="btnDismissInfoModal"
+                    class="px-5 py-2.5 rounded-xl bg-petal-600 hover:bg-petal-700 text-white font-semibold text-xs transition-colors"
                 >
-                    🔄 Hitung Ulang
+                    Saya Mengerti
                 </button>
             </div>
         </div>
-
-        <!-- Info Section -->
-        <div class="mt-12 grid md:grid-cols-3 gap-6">
-            <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-rose-50">
-                <div class="text-3xl mb-3">🧬</div>
-                <h3 class="font-bold text-gray-800 mb-2">Metode Kalendar</h3>
-                <p class="text-sm text-gray-500 leading-relaxed">Menghitung masa subur berdasarkan panjang siklus menstruasi Anda. Cocok untuk siklus yang teratur.</p>
-            </div>
-            <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-rose-50">
-                <div class="text-3xl mb-3">🔒</div>
-                <h3 class="font-bold text-gray-800 mb-2">100% Privasi</h3>
-                <p class="text-sm text-gray-500 leading-relaxed">Semua perhitungan dilakukan di browser Anda. Tidak ada data yang dikirim ke server manapun.</p>
-            </div>
-            <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-rose-50">
-                <div class="text-3xl mb-3">📊</div>
-                <h3 class="font-bold text-gray-800 mb-2">Visual Kalender</h3>
-                <p class="text-sm text-gray-500 leading-relaxed">Lihat jadwal masa subur, haid, dan ovulasi dalam tampilan kalender yang mudah dipahami.</p>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="mt-12 text-center text-sm text-gray-400">
-            <p>Dibuat dengan ❤️ untuk kesehatan perempuan Indonesia</p>
-            <p class="mt-1 text-xs">© 2026 Kalkulator Masa Subur</p>
-        </div>
     </div>
 
+    <!-- Toast Notification (for copy to clipboard) -->
+    <div id="toastNotification" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-ink-primary text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2">
+        <span>✓</span>
+        <span id="toastMessage">Ringkasan berhasil disalin!</span>
+    </div>
+
+    <!-- Application Script -->
     <script>
-        // Set default date to today
-        document.getElementById('lastPeriod').valueAsDate = new Date();
+        // State Management
+        const state = {
+            lastPeriodDate: null,
+            isVariable: false,
+            cycleLength: 28,
+            cycleMin: 26,
+            cycleMax: 32,
+            periodDuration: 5,
+            lutealPhase: 14,
+            currentViewYear: new Date().getFullYear(),
+            currentViewMonth: new Date().getMonth(),
+            selectedDate: new Date(),
+            calculatedData: null
+        };
 
-        function adjustCycle(delta) {
-            const input = document.getElementById('cycleLength');
-            const val = parseInt(input.value) + delta;
-            if (val >= 20 && val <= 45) input.value = val;
-        }
-
-        function adjustPeriod(delta) {
-            const input = document.getElementById('periodDuration');
-            const val = parseInt(input.value) + delta;
-            if (val >= 2 && val <= 10) input.value = val;
-        }
-
-        function formatDate(date) {
-            const options = { day: 'numeric', month: 'long', year: 'numeric' };
-            return date.toLocaleDateString('id-ID', options);
-        }
-
-        function formatDateShort(date) {
-            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-        }
-
+        // Date utilities
         function addDays(date, days) {
-            const result = new Date(date);
+            const result = new Date(date.getTime());
             result.setDate(result.getDate() + days);
             return result;
         }
 
-        function resetForm() {
-            document.getElementById('results').classList.add('hidden');
-            document.getElementById('results').innerHTML = '';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        function diffInDays(date1, date2) {
+            const d1 = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate());
+            const d2 = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate());
+            return Math.round((d1 - d2) / (1000 * 60 * 60 * 24));
         }
 
-        document.getElementById('calcForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const lastPeriod = new Date(document.getElementById('lastPeriod').value);
-            const cycleLength = parseInt(document.getElementById('cycleLength').value);
-            const periodDuration = parseInt(document.getElementById('periodDuration').value);
+        function isSameDay(d1, d2) {
+            if (!d1 || !d2) return false;
+            return d1.getFullYear() === d2.getFullYear() &&
+                   d1.getMonth() === d2.getMonth() &&
+                   d1.getDate() === d2.getDate();
+        }
 
-            // Ovulation typically occurs 14 days before next period
-            const ovulationDay = cycleLength - 14;
-            const ovulationDate = addDays(lastPeriod, ovulationDay);
+        function formatDateFull(date) {
+            return date.toLocaleDateString('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
 
-            // Fertile window: 5 days before ovulation + ovulation day + 1 day after
-            const fertileStart = addDays(ovulationDate, -5);
-            const fertileEnd = addDays(ovulationDate, 1);
+        function formatDateShort(date) {
+            return date.toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'short'
+            });
+        }
 
-            // Safe window (after period ends, before fertile window starts)
-            const periodEnd = addDays(lastPeriod, periodDuration - 1);
-            const safeStart1 = addDays(periodEnd, 1);
-            const safeEnd1 = addDays(fertileStart, -1);
-            
-            // Safe window after fertile window until next period
-            const safeStart2 = addDays(fertileEnd, 1);
-            const nextPeriodStart = addDays(lastPeriod, cycleLength);
-            const safeEnd2 = addDays(nextPeriodStart, -1);
+        function formatDateMonthYear(date) {
+            return date.toLocaleDateString('id-ID', {
+                month: 'long',
+                year: 'numeric'
+            });
+        }
 
-            // Display results
-            document.getElementById('ovulationDate').textContent = formatDate(ovulationDate);
-            document.getElementById('fertileWindow').textContent = 
-                `${formatDateShort(fertileStart)} — ${formatDateShort(fertileEnd)}`;
-            
-            let safeText = '';
-            if (safeEnd1 >= safeStart1) {
-                safeText = `${formatDateShort(safeStart1)} — ${formatDateShort(safeEnd1)}`;
+        function toISODateString(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        // Calculation Engine (Ogino-Knaus & Wilcox Clinical Baseline)
+        function computeCycleMetrics() {
+            const { lastPeriodDate, isVariable, cycleLength, cycleMin, cycleMax, periodDuration, lutealPhase } = state;
+            if (!lastPeriodDate) return null;
+
+            if (!isVariable) {
+                // Regular Cycle
+                const effCycleLength = cycleLength;
+                const ovulationDayIndex = effCycleLength - lutealPhase;
+                const ovulationDate = addDays(lastPeriodDate, ovulationDayIndex);
+                const fertileStart = addDays(ovulationDate, -5);
+                const fertileEnd = addDays(ovulationDate, 1);
+                const peakStart = addDays(ovulationDate, -2);
+                const peakEnd = ovulationDate;
+                const periodEnd = addDays(lastPeriodDate, periodDuration - 1);
+
+                // Safe windows
+                const safeBeforeStart = addDays(periodEnd, 1);
+                const safeBeforeEnd = addDays(fertileStart, -1);
+                const safeAfterStart = addDays(fertileEnd, 1);
+                const nextPeriodDate = addDays(lastPeriodDate, effCycleLength);
+                const safeAfterEnd = addDays(nextPeriodDate, -1);
+                const pregnancyTestDate = addDays(ovulationDate, lutealPhase); // 14 DPO
+
+                return {
+                    isVariable: false,
+                    cycleLength: effCycleLength,
+                    periodDuration,
+                    lutealPhase,
+                    lastPeriodDate,
+                    ovulationDate,
+                    ovulationDayIndex,
+                    fertileStart,
+                    fertileEnd,
+                    peakStart,
+                    peakEnd,
+                    periodEnd,
+                    safeBeforeStart,
+                    safeBeforeEnd,
+                    safeAfterStart,
+                    safeAfterEnd,
+                    nextPeriodDate,
+                    pregnancyTestDate
+                };
             } else {
-                safeText = '(tidak ada masa aman sebelum ovulasi)';
+                // Variable Cycle (Ogino-Knaus Method)
+                const fertileStartIndex = cycleMin - 18;
+                const fertileEndIndex = cycleMax - 11;
+                const fertileStart = addDays(lastPeriodDate, Math.max(periodDuration, fertileStartIndex));
+                const fertileEnd = addDays(lastPeriodDate, fertileEndIndex);
+
+                const ovulationStartDate = addDays(lastPeriodDate, cycleMin - lutealPhase);
+                const ovulationEndDate = addDays(lastPeriodDate, cycleMax - lutealPhase);
+
+                const periodEnd = addDays(lastPeriodDate, periodDuration - 1);
+                const safeBeforeStart = addDays(periodEnd, 1);
+                const safeBeforeEnd = addDays(fertileStart, -1);
+
+                const nextPeriodStartDate = addDays(lastPeriodDate, cycleMin);
+                const nextPeriodEndDate = addDays(lastPeriodDate, cycleMax);
+                const safeAfterStart = addDays(fertileEnd, 1);
+                const safeAfterEnd = addDays(nextPeriodStartDate, -1);
+                const pregnancyTestDate = addDays(ovulationEndDate, lutealPhase);
+
+                return {
+                    isVariable: true,
+                    cycleMin,
+                    cycleMax,
+                    periodDuration,
+                    lutealPhase,
+                    lastPeriodDate,
+                    ovulationStartDate,
+                    ovulationEndDate,
+                    fertileStart,
+                    fertileEnd,
+                    periodEnd,
+                    safeBeforeStart,
+                    safeBeforeEnd,
+                    safeAfterStart,
+                    safeAfterEnd,
+                    nextPeriodStartDate,
+                    nextPeriodEndDate,
+                    pregnancyTestDate
+                };
             }
-            document.getElementById('safeWindow').textContent = safeText;
+        }
 
-            // Next 3 cycles
-            const cyclesDiv = document.getElementById('nextCycles');
-            cyclesDiv.innerHTML = '';
-            for (let i = 0; i < 3; i++) {
-                const cycleStart = addDays(lastPeriod, cycleLength * i);
-                const cycleOvul = addDays(cycleStart, ovulationDay);
-                const cycleFertileStart = addDays(cycleOvul, -5);
-                const cycleFertileEnd = addDays(cycleOvul, 1);
-                
-                const div = document.createElement('div');
-                div.className = 'flex items-center justify-between bg-white/50 rounded-xl px-4 py-2.5';
-                div.innerHTML = `
-                    <span class="text-sm font-medium text-gray-600">Siklus ${i + 1}</span>
-                    <div class="text-right">
-                        <span class="text-xs text-gray-400">Haid:</span>
-                        <span class="text-sm font-semibold text-rose-500 ml-1">${formatDateShort(cycleStart)}</span>
-                        <span class="text-xs text-gray-400 ml-3">Ovulasi:</span>
-                        <span class="text-sm font-semibold text-amber-500 ml-1">${formatDateShort(cycleOvul)}</span>
-                    </div>
-                `;
-                cyclesDiv.appendChild(div);
-            }
+        // Daily Biological Status & Conception Probability Evaluator
+        function evaluateDay(targetDate) {
+            const metrics = state.calculatedData;
+            if (!metrics) return null;
 
-            // Calendar View
-            renderCalendar(lastPeriod, cycleLength, periodDuration, ovulationDay);
-
-            // Show results
-            const results = document.getElementById('results');
-            results.classList.remove('hidden');
-            results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-
-        function renderCalendar(lastPeriod, cycleLength, periodDuration, ovulationDay) {
-            const calendarDiv = document.getElementById('calendarView');
-            calendarDiv.innerHTML = '';
-
-            const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+            const baseDate = metrics.lastPeriodDate;
+            const cycleDuration = metrics.isVariable ? metrics.cycleMax : metrics.cycleLength;
             
-            // Add day headers
-            dayNames.forEach(day => {
-                const header = document.createElement('div');
-                header.className = 'text-center font-bold text-gray-400 py-1';
-                header.textContent = day;
-                calendarDiv.appendChild(header);
+            // Calculate relative days from last period
+            const totalDaysDiff = diffInDays(targetDate, baseDate);
+            
+            // Calculate cycle index and day in cycle (1-indexed)
+            let cycleIndex = Math.floor(totalDaysDiff / cycleDuration);
+            let cycleDay = (totalDaysDiff % cycleDuration);
+            if (cycleDay < 0) {
+                cycleDay += cycleDuration;
+            }
+            cycleDay += 1; // 1 to cycleDuration
+
+            const currentCycleStart = addDays(baseDate, cycleIndex * cycleDuration);
+            const pDuration = metrics.periodDuration;
+
+            // Status determination
+            let phase = 'follicular';
+            let phaseName = 'Fase Folikular';
+            let chanceName = 'Rendah';
+            let chanceLevel = 'low';
+            let chancePct = '< 3%';
+            let chanceDesc = 'Peluang pembuahan rendah. Sel telur belum siap dibuahi.';
+            let mucusTitle = 'Cairan Serviks Minimal / Sedikit Lengket';
+            let mucusDesc = 'Setelah haid usai, cairan serviks cenderung kering atau kental creamy dan asam, tidak mendukung kelangsungan hidup sperma.';
+            let hormoneTitle = 'Estrogen Mulai Meningkat Bertahap';
+            let hormoneDesc = 'FSH merangsang pematangan folikel baru di ovarium. Energi fisik dan mood umumnya mulai membaik.';
+
+            // Check if within period
+            if (cycleDay <= pDuration) {
+                phase = 'period';
+                phaseName = 'Menstruasi';
+                chanceName = 'Sangat Rendah';
+                chanceLevel = 'very-low';
+                chancePct = '< 1%';
+                chanceDesc = 'Peluang hamil sangat rendah. Terjadi peluruhan dinding rahim secara alami.';
+                mucusTitle = 'Pendarahan Haid Aktif';
+                mucusDesc = 'Dinding rahim melepaskan jaringan endometrium yang tidak dibuahi pada siklus sebelumnya.';
+                hormoneTitle = 'Estrogen & Progesteron di Titik Dasar (Baseline)';
+                hormoneDesc = 'Kadar hormon berada di titik istirahat. Tubuh memerlukan kenyamanan, hidrasi cukup, dan nutrisi zat besi.';
+            } 
+            else if (!metrics.isVariable) {
+                // Regular cycle exact evaluations
+                const ovulDay = metrics.ovulationDayIndex; // 0-indexed from cycle start
+                const dayOffsetFromOvul = (cycleDay - 1) - ovulDay;
+
+                if (dayOffsetFromOvul === 0) {
+                    // Ovulation Day
+                    phase = 'ovulation';
+                    phaseName = 'Hari Ovulasi Puncak';
+                    chanceName = 'Puncak (Sangat Tinggi)';
+                    chanceLevel = 'peak';
+                    chancePct = '28% - 33%';
+                    chanceDesc = 'Peluang konsepsi tertinggi! Sel telur matang dilepaskan ke tuba fallopi dan bertahan 12 - 24 jam.';
+                    mucusTitle = 'Lendir Tipe Putih Telur Mentah (Egg-White)';
+                    mucusDesc = 'Lendir sangat licin, jernih, dan elastis (dapat ditarik beberapa sentimeter tanpa putus), mempermudah sperma berenang cepat.';
+                    hormoneTitle = 'Lonjakan Hormon LH (Luteinizing Hormone)';
+                    hormoneDesc = 'LH mencapai puncak pemicu ovulasi. Suhu basal tubuh (BBT) masih rendah sebelum melonjak 0.3 - 0.5°C esok hari.';
+                } else if (dayOffsetFromOvul === -1 || dayOffsetFromOvul === -2) {
+                    // Peak window (2 days prior to ovulation)
+                    phase = 'fertile-peak';
+                    phaseName = 'Jendela Subur Puncak';
+                    chanceName = 'Sangat Tinggi (Peak)';
+                    chanceLevel = 'peak';
+                    chancePct = '27% - 31%';
+                    chanceDesc = 'Salah satu hari paling optimal untuk konsepsi karena sperma dapat bertahan menyambut sel telur saat ovulasi.';
+                    mucusTitle = 'Lendir Sangat Basah & Licin';
+                    mucusDesc = 'Karakteristik lendir semakin melar, memberi nutrisi dan jalur aman bagi sperma hingga 5 hari ke depan.';
+                    hormoneTitle = 'Kadar Estrogen Mencapai Puncak';
+                    hormoneDesc = 'Estrogen memicu kelenjar serviks membuka dan merangsang kelenjar pituitari melepaskan gelombang LH.';
+                } else if (dayOffsetFromOvul >= -5 && dayOffsetFromOvul < -2) {
+                    // Early fertile window
+                    phase = 'fertile';
+                    phaseName = 'Jendela Subur';
+                    chanceName = 'Tinggi';
+                    chanceLevel = 'high';
+                    chancePct = '12% - 20%';
+                    chanceDesc = 'Memasuki masa subur. Sperma yang masuk pada hari ini dapat bertahan hingga hari ovulasi tiba.';
+                    mucusTitle = 'Lendir Mulai Berair & Creamy Basah';
+                    mucusDesc = 'Cairan serviks bertransisi dari creamy menjadi lebih encer dan licin menyambut fase ovulasi.';
+                    hormoneTitle = 'Estrogen Meningkat Pesat';
+                    hormoneDesc = 'Folikel dominan (Graafian) sedang berkembang pesat di salah satu ovarium.';
+                } else if (dayOffsetFromOvul === 1) {
+                    // Day after ovulation
+                    phase = 'fertile-late';
+                    phaseName = 'Pasca Ovulasi';
+                    chanceName = 'Sedang - Menurun';
+                    chanceLevel = 'medium';
+                    chancePct = '5% - 9%';
+                    chanceDesc = 'Sel telur mendekati batas akhir kelangsungan hidup (12 - 24 jam). Peluang kehamilan mulai turun tajam.';
+                    mucusTitle = 'Lendir Mulai Mengental';
+                    mucusDesc = 'Cairan serviks mulai mengering atau kembali kental karena pengaruh progesteron yang mulai naik.';
+                    hormoneTitle = 'Lonjakan Suhu Basal Tubuh (BBT)';
+                    hormoneDesc = 'Korpus luteum mulai memproduksi progesteron, menyebabkan kenaikan suhu basal tubuh sekitar 0.3 - 0.5°C.';
+                } else if (dayOffsetFromOvul > 1) {
+                    // Luteal Phase
+                    phase = 'luteal';
+                    phaseName = 'Fase Luteal';
+                    chanceName = 'Sangat Rendah (Masa Kurang Subur)';
+                    chanceLevel = 'safe';
+                    chancePct = '< 1%';
+                    chanceDesc = 'Sel telur sudah tidak lagi viabel. Peluang konsepsi sangat kecil hingga siklus menstruasi berikutnya.';
+                    mucusTitle = 'Cairan Serviks Kering / Kental Putih';
+                    mucusDesc = 'Kanal serviks tertutup oleh sumbatan lendir kental di bawah pengaruh hormon progesteron.';
+                    hormoneTitle = 'Progesteron Dominan';
+                    hormoneDesc = 'Progesteron mempertahankan ketebalan endometrium. Menjelang akhir siklus, gejala PMS mungkin mulai terasa.';
+                }
+            } else {
+                // Variable cycle evaluations
+                const fertileStartIndex = metrics.cycleMin - 18;
+                const fertileEndIndex = metrics.cycleMax - 11;
+                const ovulStartIndex = metrics.cycleMin - metrics.lutealPhase;
+                const ovulEndIndex = metrics.cycleMax - metrics.lutealPhase;
+
+                if (cycleDay >= ovulStartIndex && cycleDay <= ovulEndIndex) {
+                    phase = 'ovulation';
+                    phaseName = 'Rentang Perkiraan Ovulasi';
+                    chanceName = 'Puncak (Sangat Tinggi)';
+                    chanceLevel = 'peak';
+                    chancePct = '25% - 30%';
+                    chanceDesc = 'Berada dalam rentang ovulasi potensial berdasarkan variasi siklus Anda.';
+                    mucusTitle = 'Lendir Serviks Tipe Sangat Subur (Egg-White)';
+                    mucusDesc = 'Sangat licin, jernih, dan melar menyerupai putih telur mentah.';
+                    hormoneTitle = 'Lonjakan Hormon LH dan Estrogen';
+                    hormoneDesc = 'Pelepasan sel telur berpeluang besar terjadi di antara rentang tanggal ini.';
+                } else if (cycleDay >= fertileStartIndex && cycleDay <= fertileEndIndex) {
+                    phase = 'fertile';
+                    phaseName = 'Jendela Subur Diperluas';
+                    chanceName = 'Tinggi';
+                    chanceLevel = 'high';
+                    chancePct = '15% - 25%';
+                    chanceDesc = 'Siklus bervariasi memperluas jendela subur untuk memastikan hari ovulasi tercakup secara aman.';
+                    mucusTitle = 'Cairan Serviks Berair & Licin';
+                    mucusDesc = 'Cairan serviks mendukung daya tahan hidup sperma hingga ovulasi terjadi.';
+                    hormoneTitle = 'Aktivitas Folikular Aktif';
+                    hormoneDesc = 'Folikel sedang matang di bawah stimulasi hormon estrogen.';
+                } else if (cycleDay > fertileEndIndex) {
+                    phase = 'luteal';
+                    phaseName = 'Fase Luteal';
+                    chanceName = 'Sangat Rendah';
+                    chanceLevel = 'safe';
+                    chancePct = '< 2%';
+                    chanceDesc = 'Peluang pembuahan sangat rendah setelah jendela subur terlewati.';
+                    mucusTitle = 'Cairan Kering / Tidak Elastis';
+                    mucusDesc = 'Pengaruh progesteron membuat serviks kembali tertutup.';
+                    hormoneTitle = 'Progesteron Dominan';
+                    hormoneDesc = 'Mempersiapkan rahim untuk implantasi atau siklus berikutnya.';
+                }
+            }
+
+            return {
+                targetDate,
+                cycleDay,
+                cycleDuration,
+                phase,
+                phaseName,
+                chanceName,
+                chanceLevel,
+                chancePct,
+                chanceDesc,
+                mucusTitle,
+                mucusDesc,
+                hormoneTitle,
+                hormoneDesc
+            };
+        }
+
+        // UI Renderer: Flo Dial Centerpiece
+        function renderFloDial() {
+            const metrics = state.calculatedData;
+            if (!metrics) return;
+
+            const today = new Date();
+            const todayEval = evaluateDay(today);
+
+            // Update Current Date Badge
+            document.getElementById('currentDateBadge').textContent = formatDateFull(today);
+
+            // Update Cycle Day Text
+            const cycleDayEl = document.getElementById('dialCycleDayText');
+            const phaseBadgeEl = document.getElementById('dialPhaseBadge');
+            const pregnancyChanceEl = document.getElementById('dialPregnancyChance');
+            const summaryNoteEl = document.getElementById('dialSummaryNote');
+
+            cycleDayEl.textContent = `Hari ke-${todayEval.cycleDay}`;
+            
+            // Set Phase Badge styling
+            let badgeClass = 'px-3 py-1 rounded-full text-xs font-bold border ';
+            if (todayEval.chanceLevel === 'peak') {
+                badgeClass += 'bg-amber-100 text-amber-900 border-amber-300';
+            } else if (todayEval.chanceLevel === 'high') {
+                badgeClass += 'bg-petal-100 text-petal-900 border-petal-300';
+            } else if (todayEval.phase === 'period') {
+                badgeClass += 'bg-rose-100 text-rose-900 border-rose-300';
+            } else {
+                badgeClass += 'bg-purple-100 text-purple-900 border-purple-200';
+            }
+            phaseBadgeEl.className = badgeClass;
+            phaseBadgeEl.textContent = todayEval.phaseName;
+
+            pregnancyChanceEl.textContent = `${todayEval.chanceName} (${todayEval.chancePct})`;
+
+            // Countdown to next period
+            let nextPeriodRef = metrics.isVariable ? metrics.nextPeriodStartDate : metrics.nextPeriodDate;
+            const daysToNext = diffInDays(nextPeriodRef, today);
+            
+            if (daysToNext > 0) {
+                summaryNoteEl.innerHTML = `Hari ini Anda berada di <strong>${todayEval.phaseName}</strong>. Diperkirakan sekitar <strong>${daysToNext} hari lagi</strong> menuju jadwal menstruasi berikutnya.`;
+            } else if (daysToNext === 0) {
+                summaryNoteEl.innerHTML = `Hari ini adalah perkiraan <strong>dimulainya menstruasi berikutnya</strong> jika tidak terjadi pembuahan.`;
+            } else {
+                summaryNoteEl.innerHTML = `Terlambat ${Math.abs(daysToNext)} hari dari perkiraan siklus awal. Jika sedang merencanakan kehamilan, Anda dapat mempertimbangkan tes kehamilan dini.`;
+            }
+
+            // Animate SVG Radial Progress Circle
+            const circle = document.getElementById('cycleProgressCircle');
+            const circumference = 2 * Math.PI * 98; // ~615.75
+            circle.style.strokeDasharray = `${circumference}`;
+            
+            const progressRatio = Math.min(Math.max(todayEval.cycleDay / todayEval.cycleDuration, 0), 1);
+            const offset = circumference - (circumference * progressRatio);
+            
+            requestAnimationFrame(() => {
+                circle.style.strokeDashoffset = `${offset}`;
+            });
+        }
+
+        // UI Renderer: Key Metric Cards
+        function renderKeyCards() {
+            const metrics = state.calculatedData;
+            if (!metrics) return;
+
+            const cardOvulation = document.getElementById('cardOvulationDate');
+            const cardFertile = document.getElementById('cardFertileWindow');
+            const cardSafe = document.getElementById('cardSafeWindow');
+            const cardNextPeriod = document.getElementById('cardNextPeriod');
+            const cardPregnancyTest = document.getElementById('cardPregnancyTest');
+
+            if (!metrics.isVariable) {
+                cardOvulation.textContent = formatDateFull(metrics.ovulationDate);
+                cardFertile.textContent = `${formatDateShort(metrics.fertileStart)} - ${formatDateShort(metrics.fertileEnd)}`;
+                
+                let safeText = '';
+                if (metrics.safeBeforeEnd >= metrics.safeBeforeStart) {
+                    safeText = `${formatDateShort(metrics.safeBeforeStart)} - ${formatDateShort(metrics.safeBeforeEnd)}`;
+                } else {
+                    safeText = `${formatDateShort(metrics.safeAfterStart)} ke depan`;
+                }
+                cardSafe.textContent = safeText;
+                cardNextPeriod.textContent = formatDateShort(metrics.nextPeriodDate);
+                cardPregnancyTest.textContent = `Tes Kehamilan Akurat: Mulai ${formatDateShort(metrics.pregnancyTestDate)} (14 DPO)`;
+            } else {
+                cardOvulation.textContent = `${formatDateShort(metrics.ovulationStartDate)} - ${formatDateShort(metrics.ovulationEndDate)}`;
+                cardFertile.textContent = `${formatDateShort(metrics.fertileStart)} - ${formatDateShort(metrics.fertileEnd)}`;
+                cardSafe.textContent = `${formatDateShort(metrics.safeAfterStart)} ke depan`;
+                cardNextPeriod.textContent = `${formatDateShort(metrics.nextPeriodStartDate)} - ${formatDateShort(metrics.nextPeriodEndDate)}`;
+                cardPregnancyTest.textContent = `Tes Kehamilan Akurat: Mulai ${formatDateShort(metrics.pregnancyTestDate)}`;
+            }
+        }
+
+        // UI Renderer: Interactive Monthly Calendar
+        function renderInteractiveCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            const year = state.currentViewYear;
+            const month = state.currentViewMonth;
+
+            // Update Month Title
+            const titleDate = new Date(year, month, 1);
+            document.getElementById('calCurrentMonthTitle').textContent = formatDateMonthYear(titleDate);
+
+            // Month calculation
+            const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0 = Sun
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            const today = new Date();
+
+            // 1. Previous month trailing days
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const dayNum = daysInPrevMonth - i;
+                const cell = document.createElement('div');
+                cell.className = 'h-11 sm:h-14 rounded-2xl flex flex-col items-center justify-center text-ink-muted/40 text-xs font-medium cursor-not-allowed bg-transparent';
+                cell.textContent = dayNum;
+                grid.appendChild(cell);
+            }
+
+            // 2. Current month active days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cellDate = new Date(year, month, day);
+                const dayEval = evaluateDay(cellDate);
+                const isToday = isSameDay(cellDate, today);
+                const isSelected = isSameDay(cellDate, state.selectedDate);
+
+                const cell = document.createElement('button');
+                cell.type = 'button';
+                cell.setAttribute('aria-label', `${day} ${formatDateMonthYear(cellDate)} - ${dayEval.phaseName}`);
+                
+                // Base styling with mobile-first comfortable tap targets
+                let cellClasses = 'cal-day-cell h-11 sm:h-14 rounded-2xl flex flex-col items-center justify-center relative font-semibold text-xs transition-all cursor-pointer select-none ';
+
+                // Semantic phase coloring
+                if (dayEval.phase === 'period') {
+                    cellClasses += 'bg-petal-500 text-white shadow-sm shadow-petal-300 ';
+                } else if (dayEval.phase === 'ovulation') {
+                    cellClasses += 'bg-amber-400 text-amber-950 font-bold ovulation-glow ';
+                } else if (dayEval.phase === 'fertile-peak' || dayEval.phase === 'fertile' || dayEval.phase === 'fertile-late') {
+                    cellClasses += 'bg-amber-100 text-amber-900 border border-amber-300 ';
+                } else if (dayEval.phase === 'luteal') {
+                    cellClasses += 'bg-purple-50/70 text-purple-900 border border-purple-100 hover:bg-purple-100 ';
+                } else {
+                    cellClasses += 'bg-petal-50/40 text-ink-primary hover:bg-petal-100 ';
+                }
+
+                // Selected indicator
+                if (isSelected) {
+                    cellClasses += 'ring-2 sm:ring-4 ring-petal-600 ring-offset-2 z-10 ';
+                }
+
+                // Today mark
+                if (isToday) {
+                    cellClasses += 'font-extrabold underline decoration-2 ';
+                }
+
+                cell.className = cellClasses;
+
+                // Day number & subtle icon or dot
+                let innerHTML = `<span class="text-xs sm:text-sm leading-none">${day}</span>`;
+                if (dayEval.phase === 'ovulation') {
+                    innerHTML += `<span class="text-[9px] leading-none mt-0.5">★</span>`;
+                } else if (dayEval.phase === 'period') {
+                    innerHTML += `<span class="text-[8px] leading-none mt-0.5 opacity-80">💧</span>`;
+                } else if (dayEval.chanceLevel === 'peak' || dayEval.chanceLevel === 'high') {
+                    innerHTML += `<span class="w-1.5 h-1.5 rounded-full bg-amber-600 mt-0.5"></span>`;
+                }
+
+                cell.innerHTML = innerHTML;
+
+                // Click listener to inspect specific day
+                cell.addEventListener('click', () => {
+                    state.selectedDate = cellDate;
+                    renderInteractiveCalendar();
+                    renderSelectedDayDetail(cellDate);
+                });
+
+                grid.appendChild(cell);
+            }
+
+            // 3. Next month leading days to complete grid
+            const totalCells = firstDayOfWeek + daysInMonth;
+            const remaining = (7 - (totalCells % 7)) % 7;
+            for (let i = 1; i <= remaining; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'h-11 sm:h-14 rounded-2xl flex flex-col items-center justify-center text-ink-muted/40 text-xs font-medium cursor-not-allowed bg-transparent';
+                cell.textContent = i;
+                grid.appendChild(cell);
+            }
+        }
+
+        // UI Renderer: Selected Day Detail Card
+        function renderSelectedDayDetail(targetDate) {
+            const dayEval = evaluateDay(targetDate);
+            if (!dayEval) return;
+
+            document.getElementById('selectedDayDate').textContent = `${formatDateFull(targetDate)} (Hari ke-${dayEval.cycleDay} Siklus)`;
+
+            // Badge styling
+            const badgeContainer = document.getElementById('selectedDayBadgeContainer');
+            let badgeClass = 'px-3 py-1 rounded-full text-xs font-bold border ';
+            if (dayEval.chanceLevel === 'peak') {
+                badgeClass += 'bg-amber-100 text-amber-900 border-amber-300';
+            } else if (dayEval.chanceLevel === 'high') {
+                badgeClass += 'bg-petal-100 text-petal-900 border-petal-300';
+            } else if (dayEval.phase === 'period') {
+                badgeClass += 'bg-rose-100 text-rose-900 border-rose-300';
+            } else {
+                badgeClass += 'bg-purple-100 text-purple-900 border-purple-200';
+            }
+            badgeContainer.innerHTML = `<span class="${badgeClass}">${dayEval.phaseName}</span>`;
+
+            // Card 1: Chance
+            document.getElementById('selectedDayChanceText').textContent = `Peluang Hamil: ${dayEval.chanceName} (${dayEval.chancePct})`;
+            document.getElementById('selectedDayChanceDesc').textContent = dayEval.chanceDesc;
+
+            // Card 2: Mucus
+            document.getElementById('selectedDayMucusTitle').textContent = dayEval.mucusTitle;
+            document.getElementById('selectedDayMucusDesc').textContent = dayEval.mucusDesc;
+
+            // Card 3: Hormones & BBT
+            document.getElementById('selectedDayHormoneTitle').textContent = dayEval.hormoneTitle;
+            document.getElementById('selectedDayHormoneDesc').textContent = dayEval.hormoneDesc;
+        }
+
+        // UI Renderer: Future 6 Cycles Table
+        function renderFutureCyclesTable() {
+            const metrics = state.calculatedData;
+            if (!metrics) return;
+
+            const tbody = document.getElementById('futureCyclesTableBody');
+            tbody.innerHTML = '';
+
+            const cycleLength = metrics.isVariable ? metrics.cycleMax : metrics.cycleLength;
+
+            for (let i = 1; i <= 6; i++) {
+                const cycleStart = addDays(metrics.lastPeriodDate, cycleLength * i);
+                
+                let ovulDateText = '';
+                let fertileText = '';
+                
+                if (!metrics.isVariable) {
+                    const cycleOvul = addDays(cycleStart, metrics.ovulationDayIndex);
+                    const cycleFertileStart = addDays(cycleOvul, -5);
+                    const cycleFertileEnd = addDays(cycleOvul, 1);
+                    ovulDateText = formatDateShort(cycleOvul);
+                    fertileText = `${formatDateShort(cycleFertileStart)} - ${formatDateShort(cycleFertileEnd)}`;
+                } else {
+                    const ovulStart = addDays(cycleStart, metrics.cycleMin - metrics.lutealPhase);
+                    const ovulEnd = addDays(cycleStart, metrics.cycleMax - metrics.lutealPhase);
+                    const fertileStart = addDays(cycleStart, metrics.cycleMin - 18);
+                    const fertileEnd = addDays(cycleStart, metrics.cycleMax - 11);
+                    ovulDateText = `${formatDateShort(ovulStart)} - ${formatDateShort(ovulEnd)}`;
+                    fertileText = `${formatDateShort(fertileStart)} - ${formatDateShort(fertileEnd)}`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-petal-50/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="py-3 font-bold text-petal-800">Siklus +${i}</td>
+                    <td class="py-3 font-semibold text-rose-600">${formatDateShort(cycleStart)}</td>
+                    <td class="py-3 font-semibold text-amber-700">${fertileText}</td>
+                    <td class="py-3 font-bold text-amber-800">${ovulDateText}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        // Copy Summary to Clipboard
+        function copySummaryText() {
+            const metrics = state.calculatedData;
+            if (!metrics) return;
+
+            let summary = `🌸 Ringkasan Siklus & Masa Subur Luna (Flo Style)\n`;
+            summary += `Hari Pertama Haid Terakhir: ${formatDateFull(metrics.lastPeriodDate)}\n`;
+            
+            if (!metrics.isVariable) {
+                summary += `Panjang Siklus: ${metrics.cycleLength} hari (Teratur)\n`;
+                summary += `Perkiraan Ovulasi: ${formatDateFull(metrics.ovulationDate)}\n`;
+                summary += `Jendela Subur: ${formatDateShort(metrics.fertileStart)} - ${formatDateShort(metrics.fertileEnd)}\n`;
+                summary += `Perkiraan Haid Berikutnya: ${formatDateFull(metrics.nextPeriodDate)}\n`;
+            } else {
+                summary += `Rentang Siklus: ${metrics.cycleMin} - ${metrics.cycleMax} hari (Bervariasi)\n`;
+                summary += `Rentang Ovulasi: ${formatDateShort(metrics.ovulationStartDate)} - ${formatDateShort(metrics.ovulationEndDate)}\n`;
+                summary += `Jendela Subur: ${formatDateShort(metrics.fertileStart)} - ${formatDateShort(metrics.fertileEnd)}\n`;
+                summary += `Perkiraan Haid Berikutnya: ${formatDateShort(metrics.nextPeriodStartDate)} - ${formatDateShort(metrics.nextPeriodEndDate)}\n`;
+            }
+            summary += `\nDihitung secara lokal dengan privasi 100% menggunakan metode kalendar klinis.`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(summary).then(() => {
+                    showToast('Ringkasan berhasil disalin!');
+                }).catch(() => {
+                    fallbackCopy(summary);
+                });
+            } else {
+                fallbackCopy(summary);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('Ringkasan berhasil disalin!');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastMessage').textContent = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+                toast.classList.remove('opacity-100');
+            }, 2500);
+        }
+
+        // Form Validation & Execution
+        function validateAndCalculate(shouldScroll = false) {
+            const dateInput = document.getElementById('lastPeriodInput');
+            const cycleLengthInput = document.getElementById('cycleLengthInput');
+            const cycleMinInput = document.getElementById('cycleMinInput');
+            const cycleMaxInput = document.getElementById('cycleMaxInput');
+            const periodDurationInput = document.getElementById('periodDurationInput');
+            const lutealPhaseInput = document.getElementById('lutealPhaseInput');
+            const errorArea = document.getElementById('formErrorMessage');
+            const errorText = document.getElementById('formErrorText');
+
+            errorArea.classList.add('hidden');
+
+            if (!dateInput.value) {
+                errorText.textContent = 'Harap pilih tanggal hari pertama haid terakhir (HPHT) Anda.';
+                errorArea.classList.remove('hidden');
+                return false;
+            }
+
+            const parts = dateInput.value.split('-');
+            const selectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            
+            const today = new Date();
+            const futureDiff = diffInDays(selectedDate, today);
+            if (futureDiff > 0) {
+                errorText.textContent = 'Tanggal haid terakhir tidak boleh di masa depan.';
+                errorArea.classList.remove('hidden');
+                return false;
+            }
+
+            const pastDiff = diffInDays(today, selectedDate);
+            if (pastDiff > 120) {
+                errorText.textContent = 'Tanggal haid terakhir lebih dari 120 hari yang lalu. Silakan masukkan tanggal haid terbaru untuk akurasi yang lebih baik.';
+                errorArea.classList.remove('hidden');
+                return false;
+            }
+
+            const periodDuration = parseInt(periodDurationInput.value) || 5;
+            const lutealPhase = parseInt(lutealPhaseInput.value) || 14;
+
+            if (state.isVariable) {
+                const minC = parseInt(cycleMinInput.value) || 26;
+                const maxC = parseInt(cycleMaxInput.value) || 32;
+
+                if (minC >= maxC) {
+                    errorText.textContent = 'Siklus terpendek harus lebih kecil daripada siklus terpanjang.';
+                    errorArea.classList.remove('hidden');
+                    return false;
+                }
+                if (minC <= periodDuration) {
+                    errorText.textContent = 'Panjang siklus menstruasi harus lebih besar daripada lama pendarahan haid.';
+                    errorArea.classList.remove('hidden');
+                    return false;
+                }
+
+                state.cycleMin = minC;
+                state.cycleMax = maxC;
+            } else {
+                const cycleL = parseInt(cycleLengthInput.value) || 28;
+                if (cycleL <= periodDuration) {
+                    errorText.textContent = 'Panjang siklus menstruasi harus lebih besar daripada lama pendarahan haid.';
+                    errorArea.classList.remove('hidden');
+                    return false;
+                }
+                state.cycleLength = cycleL;
+            }
+
+            state.lastPeriodDate = selectedDate;
+            state.periodDuration = periodDuration;
+            state.lutealPhase = lutealPhase;
+            state.selectedDate = new Date(); // Default selected date in calendar is today
+
+            // Set current calendar view to month of selected date
+            state.currentViewYear = state.selectedDate.getFullYear();
+            state.currentViewMonth = state.selectedDate.getMonth();
+
+            // Compute
+            state.calculatedData = computeCycleMetrics();
+
+            // Render all UI components
+            renderFloDial();
+            renderKeyCards();
+            renderInteractiveCalendar();
+            renderSelectedDayDetail(state.selectedDate);
+            renderFutureCyclesTable();
+
+            if (shouldScroll) {
+                document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            return true;
+        }
+
+        // Quick Preset Setup
+        function setupQuickChips() {
+            document.querySelectorAll('.quick-chip').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const daysAgo = parseInt(btn.getAttribute('data-days')) || 0;
+                    const date = addDays(new Date(), -daysAgo);
+                    document.getElementById('lastPeriodInput').value = toISODateString(date);
+                    validateAndCalculate(false);
+                });
+            });
+        }
+
+        // Stepper Controls
+        function setupSteppers() {
+            // Cycle Length
+            document.getElementById('btnCycleMinus').addEventListener('click', () => {
+                const el = document.getElementById('cycleLengthInput');
+                const val = parseInt(el.value) || 28;
+                if (val > 20) {
+                    el.value = val - 1;
+                    validateAndCalculate(false);
+                }
             });
 
-            // Render 3 months
-            for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
-                const monthDate = addDays(lastPeriod, cycleLength * monthOffset);
-                const year = monthDate.getFullYear();
-                const month = monthDate.getMonth();
-                
-                // Month header
-                const monthName = monthDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-                const monthHeader = document.createElement('div');
-                monthHeader.className = 'col-span-7 text-center font-bold text-gray-700 py-2 mt-2 text-sm';
-                monthHeader.textContent = monthName;
-                calendarDiv.appendChild(monthHeader);
-
-                // First day padding
-                const firstDay = new Date(year, month, 1).getDay();
-                for (let i = 0; i < firstDay; i++) {
-                    const empty = document.createElement('div');
-                    calendarDiv.appendChild(empty);
+            document.getElementById('btnCyclePlus').addEventListener('click', () => {
+                const el = document.getElementById('cycleLengthInput');
+                const val = parseInt(el.value) || 28;
+                if (val < 45) {
+                    el.value = val + 1;
+                    validateAndCalculate(false);
                 }
+            });
 
-                // Days in month
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const currentDate = new Date(year, month, day);
-                    const dayEl = document.createElement('div');
-                    dayEl.className = 'text-center py-1.5 rounded-lg font-medium';
-                    dayEl.textContent = day;
-
-                    // Calculate which cycle day this is
-                    const diffDays = Math.floor((currentDate - lastPeriod) / (1000 * 60 * 60 * 24));
-                    const cycleDay = ((diffDays % cycleLength) + cycleLength) % cycleLength;
-
-                    if (cycleDay < periodDuration) {
-                        // Period
-                        dayEl.className += ' bg-rose-400 text-white';
-                    } else if (cycleDay === ovulationDay) {
-                        // Ovulation
-                        dayEl.className += ' bg-rose-500 text-white fertile-pulse';
-                    } else if (cycleDay >= ovulationDay - 5 && cycleDay <= ovulationDay + 1) {
-                        // Fertile
-                        dayEl.className += ' bg-amber-400 text-white';
-                    } else {
-                        // Safe
-                        dayEl.className += ' bg-gray-100 text-gray-500';
-                    }
-
-                    calendarDiv.appendChild(dayEl);
+            // Period Duration
+            document.getElementById('btnPeriodMinus').addEventListener('click', () => {
+                const el = document.getElementById('periodDurationInput');
+                const val = parseInt(el.value) || 5;
+                if (val > 2) {
+                    el.value = val - 1;
+                    validateAndCalculate(false);
                 }
-            }
+            });
+
+            document.getElementById('btnPeriodPlus').addEventListener('click', () => {
+                const el = document.getElementById('periodDurationInput');
+                const val = parseInt(el.value) || 5;
+                if (val < 10) {
+                    el.value = val + 1;
+                    validateAndCalculate(false);
+                }
+            });
         }
+
+        // Mode Switching: Regular vs Variable
+        function setupModeSelector() {
+            const regBtn = document.getElementById('modeRegularBtn');
+            const varBtn = document.getElementById('modeVariableBtn');
+            const regGroup = document.getElementById('regularCycleGroup');
+            const varGroup = document.getElementById('variableCycleGroup');
+
+            regBtn.addEventListener('click', () => {
+                state.isVariable = false;
+                regBtn.className = 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 bg-white text-petal-700 shadow-sm border border-petal-200/60';
+                varBtn.className = 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 text-ink-secondary hover:text-ink-primary';
+                regGroup.classList.remove('hidden');
+                varGroup.classList.add('hidden');
+                validateAndCalculate(false);
+            });
+
+            varBtn.addEventListener('click', () => {
+                state.isVariable = true;
+                varBtn.className = 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 bg-white text-petal-700 shadow-sm border border-petal-200/60';
+                regBtn.className = 'py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 text-ink-secondary hover:text-ink-primary';
+                varGroup.classList.remove('hidden');
+                regGroup.classList.add('hidden');
+                validateAndCalculate(false);
+            });
+        }
+
+        // Advanced Luteal Phase Accordion Toggle
+        function setupAdvancedAccordion() {
+            const toggleBtn = document.getElementById('toggleAdvancedBtn');
+            const content = document.getElementById('advancedContent');
+            const arrow = document.getElementById('accordionArrow');
+
+            toggleBtn.addEventListener('click', () => {
+                const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+                if (isExpanded) {
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                    content.classList.add('hidden');
+                    arrow.style.transform = 'rotate(0deg)';
+                } else {
+                    toggleBtn.setAttribute('aria-expanded', 'true');
+                    content.classList.remove('hidden');
+                    arrow.style.transform = 'rotate(180deg)';
+                }
+            });
+
+            document.getElementById('lutealPhaseInput').addEventListener('input', () => {
+                validateAndCalculate(false);
+            });
+        }
+
+        // Calendar Month Navigation
+        function setupCalendarNav() {
+            document.getElementById('btnCalPrev').addEventListener('click', () => {
+                state.currentViewMonth--;
+                if (state.currentViewMonth < 0) {
+                    state.currentViewMonth = 11;
+                    state.currentViewYear--;
+                }
+                renderInteractiveCalendar();
+            });
+
+            document.getElementById('btnCalNext').addEventListener('click', () => {
+                state.currentViewMonth++;
+                if (state.currentViewMonth > 11) {
+                    state.currentViewMonth = 0;
+                    state.currentViewYear++;
+                }
+                renderInteractiveCalendar();
+            });
+
+            document.getElementById('btnCalToday').addEventListener('click', () => {
+                const now = new Date();
+                state.currentViewYear = now.getFullYear();
+                state.currentViewMonth = now.getMonth();
+                state.selectedDate = now;
+                renderInteractiveCalendar();
+                renderSelectedDayDetail(now);
+            });
+        }
+
+        // Info Modal Handlers (Accessible, Escape key, backdrop click)
+        function setupInfoModal() {
+            const modal = document.getElementById('infoModal');
+            const openBtn = document.getElementById('btnOpenInfoModal');
+            const closeBtn = document.getElementById('btnCloseInfoModal');
+            const dismissBtn = document.getElementById('btnDismissInfoModal');
+
+            function openModal() {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+
+            openBtn.addEventListener('click', openModal);
+            closeBtn.addEventListener('click', closeModal);
+            dismissBtn.addEventListener('click', closeModal);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    closeModal();
+                }
+            });
+        }
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default date to 10 days ago (so today is in fertile window / ovulation for demo delight)
+            const defaultDate = addDays(new Date(), -10);
+            document.getElementById('lastPeriodInput').value = toISODateString(defaultDate);
+
+            setupQuickChips();
+            setupSteppers();
+            setupModeSelector();
+            setupAdvancedAccordion();
+            setupCalendarNav();
+            setupInfoModal();
+
+            // Quick Fill Standard Button
+            document.getElementById('btnQuickFill').addEventListener('click', () => {
+                const refDate = addDays(new Date(), -12);
+                document.getElementById('lastPeriodInput').value = toISODateString(refDate);
+                document.getElementById('cycleLengthInput').value = '28';
+                document.getElementById('periodDurationInput').value = '5';
+                document.getElementById('lutealPhaseInput').value = '14';
+                if (state.isVariable) {
+                    document.getElementById('modeRegularBtn').click();
+                } else {
+                    validateAndCalculate(true);
+                }
+            });
+
+            // Live input triggers
+            document.getElementById('lastPeriodInput').addEventListener('change', () => validateAndCalculate(false));
+            document.getElementById('cycleLengthInput').addEventListener('input', () => validateAndCalculate(false));
+            document.getElementById('cycleMinInput').addEventListener('input', () => validateAndCalculate(false));
+            document.getElementById('cycleMaxInput').addEventListener('input', () => validateAndCalculate(false));
+            document.getElementById('periodDurationInput').addEventListener('input', () => validateAndCalculate(false));
+
+            // Form Submit
+            document.getElementById('fertilityForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                validateAndCalculate(true);
+            });
+
+            // Copy Button
+            document.getElementById('btnCopySummary').addEventListener('click', copySummaryText);
+
+            // Print Button
+            document.getElementById('btnPrintPage').addEventListener('click', () => {
+                window.print();
+            });
+
+            // Reset Button
+            document.getElementById('btnResetCalculation').addEventListener('click', () => {
+                const today = new Date();
+                document.getElementById('lastPeriodInput').value = toISODateString(today);
+                document.getElementById('cycleLengthInput').value = '28';
+                document.getElementById('periodDurationInput').value = '5';
+                document.getElementById('lutealPhaseInput').value = '14';
+                if (state.isVariable) {
+                    document.getElementById('modeRegularBtn').click();
+                } else {
+                    validateAndCalculate(false);
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                showToast('Pengaturan siklus berhasil diatur ulang.');
+            });
+
+            // Initial calculation
+            validateAndCalculate(false);
+        });
     </script>
 </body>
 </html>
