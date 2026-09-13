@@ -273,30 +273,30 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-12 w-full overflow-x-hidden min-w-0">
       {/* Header Profile & Quick Action Bar */}
-      <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-rose-100">
-        <div>
+      <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-rose-100 min-w-0 w-full">
+        <div className="min-w-0 max-w-full">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
             <span className="text-xs font-semibold text-rose-800 uppercase tracking-wider">
               Dashboard Status Siklus
             </span>
           </div>
-          <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink-primary mt-1">
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink-primary mt-1 break-words">
             Dashboard Siklus Menstruasi
           </h1>
-          <p className="text-xs sm:text-sm text-ink-secondary mt-1">
-            Masuk sebagai: <strong className="text-rose-700">{user?.email || 'Pengguna'}</strong>
+          <p className="text-xs sm:text-sm text-ink-secondary mt-1 break-words">
+            Masuk sebagai: <strong className="text-rose-700 break-all">{user?.email || 'Pengguna'}</strong>
             {isDemoUser && (
-              <span className="ml-2 text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
+              <span className="ml-2 text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
                 Akun Demo
               </span>
             )}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
           <Link
             to="/calculator"
             className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold shadow-md shadow-rose-200 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
@@ -399,14 +399,14 @@ export const DashboardPage: React.FC = () => {
         <section className="space-y-8 animate-in fade-in duration-300">
           {/* PERIOD CHECK-IN CARD */}
           {isTodayPredictedPeriod && (
-            <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 rounded-3xl p-6 sm:p-7 text-white shadow-lg shadow-rose-200 border border-rose-300 relative overflow-hidden">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl flex-shrink-0">
+            <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 rounded-3xl p-5 sm:p-7 text-white shadow-lg shadow-rose-200 border border-rose-300 relative overflow-hidden min-w-0">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 min-w-0">
+                <div className="flex items-start gap-3.5 sm:gap-4 min-w-0">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl sm:text-2xl shrink-0">
                     🩸
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-bold uppercase tracking-wider bg-white/25 px-2.5 py-0.5 rounded-full">
                         Check-in Haid Hari Ini
                       </span>
@@ -437,7 +437,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 self-start md:self-center flex-shrink-0">
+                <div className="flex items-center gap-2.5 sm:gap-3 self-start md:self-center shrink-0 flex-wrap">
                   <button
                     type="button"
                     disabled={isCheckinSubmitting}
@@ -486,8 +486,8 @@ export const DashboardPage: React.FC = () => {
           {calculatedMetrics && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* HPHT */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-rose-100 shadow-sm flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl flex-shrink-0">
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-rose-100 shadow-sm flex items-center gap-3.5 min-w-0">
+                <div className="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl shrink-0">
                   📅
                 </div>
                 <div className="min-w-0">
@@ -502,8 +502,8 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               {/* Cycle Length */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-rose-100 shadow-sm flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center text-xl flex-shrink-0">
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-rose-100 shadow-sm flex items-center gap-3.5 min-w-0">
+                <div className="w-12 h-12 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center text-xl shrink-0">
                   🔄
                 </div>
                 <div className="min-w-0">
@@ -520,8 +520,8 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               {/* Ovulation Peak */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-rose-100 shadow-sm flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl flex-shrink-0">
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-rose-100 shadow-sm flex items-center gap-3.5 min-w-0">
+                <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl shrink-0">
                   🥚
                 </div>
                 <div className="min-w-0">
@@ -536,8 +536,8 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               {/* Next Period Date */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-rose-100 shadow-sm flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl flex-shrink-0">
+              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-rose-100 shadow-sm flex items-center gap-3.5 min-w-0">
+                <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl shrink-0">
                   ⏳
                 </div>
                 <div className="min-w-0">
@@ -675,7 +675,7 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               {/* Luna Cycle Ring */}
-              <div className="relative w-64 h-64 sm:w-72 sm:h-72 mx-auto my-2 flex items-center justify-center">
+              <div className="relative w-56 h-56 sm:w-72 sm:h-72 mx-auto my-2 flex items-center justify-center max-w-full">
                 <svg className="w-full h-full" viewBox="0 0 240 240">
                   <circle cx="120" cy="120" r="98" fill="none" stroke="#fdecf0" strokeWidth="16" />
                   <circle
@@ -813,20 +813,20 @@ export const DashboardPage: React.FC = () => {
 
           {/* (d) 3-CYCLE PROJECTIONS FROM SAVED DATA */}
           {nextThreeCycles.length > 0 && (
-            <section className="bg-gradient-to-r from-violet-50 via-purple-50 to-pink-50 rounded-3xl p-6 sm:p-7 border border-violet-200 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-violet-100">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-2xl">📅</span>
-                  <div>
-                    <h3 className="font-display font-bold text-lg text-ink-primary">
+            <section className="bg-gradient-to-r from-violet-50 via-purple-50 to-pink-50 rounded-3xl p-5 sm:p-7 border border-violet-200 shadow-sm overflow-hidden min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-violet-100 min-w-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="text-2xl shrink-0">📅</span>
+                  <div className="min-w-0">
+                    <h3 className="font-display font-bold text-lg text-ink-primary truncate">
                       Proyeksi 3 Siklus ke Depan
                     </h3>
-                    <p className="text-xs text-ink-secondary">
+                    <p className="text-xs text-ink-secondary truncate">
                       Estimasi tanggal haid, ovulasi, dan jendela subur untuk 3 siklus mendatang
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-violet-100 text-violet-800 self-start sm:self-auto">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-violet-100 text-violet-800 self-start sm:self-auto shrink-0">
                   Metode Klinis Otomatis
                 </span>
               </div>
@@ -835,7 +835,7 @@ export const DashboardPage: React.FC = () => {
                 {nextThreeCycles.map((c) => (
                   <div
                     key={c.cycleNumber}
-                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 border border-violet-100 shadow-xs space-y-2.5"
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 border border-violet-100 shadow-xs space-y-2.5 min-w-0"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-800">
@@ -870,7 +870,7 @@ export const DashboardPage: React.FC = () => {
 
           {/* (c) CALENDAR 3-MONTH VIEW BASED ON LATEST SAVED CYCLE */}
           {calculatedMetrics && (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-100">
+            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-luna-card border border-rose-100 overflow-hidden min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-rose-100">
                 <div>
                   <div className="flex items-center gap-2">
@@ -912,7 +912,7 @@ export const DashboardPage: React.FC = () => {
                 {threeMonthsData.map((m) => (
                   <div
                     key={`${m.year}-${m.month}`}
-                    className="bg-rose-50/30 rounded-2xl p-4 sm:p-5 border border-rose-100 shadow-sm"
+                    className="bg-rose-50/30 rounded-2xl p-3 sm:p-5 border border-rose-100 shadow-sm overflow-hidden min-w-0"
                   >
                     <h4 className="font-display font-bold text-center text-sm sm:text-base text-ink-primary mb-3">
                       {m.monthTitle}
@@ -994,9 +994,9 @@ export const DashboardPage: React.FC = () => {
 
           {/* SELECTED DAY CLINICAL DETAIL */}
           {selectedDayEval && (
-            <div className="bg-gradient-to-br from-white to-rose-50/50 rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-rose-100">
-                <div>
+            <div className="bg-gradient-to-br from-white to-rose-50/50 rounded-3xl p-5 sm:p-8 shadow-luna-card border border-rose-200 overflow-hidden min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-rose-100 min-w-0">
+                <div className="min-w-0">
                   <span className="text-xs font-bold text-rose-700 uppercase tracking-wider">
                     Detail Tanggal yang Dipilih
                   </span>
@@ -1023,7 +1023,7 @@ export const DashboardPage: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {/* Conception Chance */}
-                <div className="bg-white/90 p-4 rounded-2xl border border-rose-100 shadow-sm">
+                <div className="bg-white/90 p-4 rounded-2xl border border-rose-100 shadow-sm min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-lg">📈</span>
                     <h5 className="text-xs font-bold text-ink-primary uppercase">Peluang Konsepsi</h5>

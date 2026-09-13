@@ -120,7 +120,7 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
   const badge = getPhaseBadge(activePhase?.phase_type);
 
   return (
-    <div className={`w-full rounded-2xl bg-white border border-rose-100 shadow-sm ${compact ? 'p-3.5' : 'p-5 sm:p-6'}`}>
+    <div className={`w-full rounded-2xl bg-white border border-rose-100 shadow-sm overflow-hidden ${compact ? 'p-3.5' : 'p-5 sm:p-6'}`}>
       {/* Header Info */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-3 border-b border-rose-50">
         <div className="flex items-center gap-2.5">
@@ -170,7 +170,7 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
         {!isBeforeStart && totalDiffDays <= totalLength + 5 && (
           <div
             className="absolute top-0 -translate-x-1/2 flex flex-col items-center z-10 pointer-events-none transition-all duration-300"
-            style={{ left: `${Math.min(98, Math.max(2, currentPct))}%` }}
+            style={{ left: `${Math.min(94, Math.max(6, currentPct))}%` }}
           >
             <span className="px-2 py-0.5 rounded-md bg-ink-primary text-white text-[10px] font-bold shadow-md whitespace-nowrap">
               Hari ke-{cycleDay}

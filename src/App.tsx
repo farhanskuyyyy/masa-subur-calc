@@ -15,8 +15,8 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col justify-between">
-          <div>
+        <div className="min-h-screen flex flex-col justify-between w-full overflow-x-hidden">
+          <div className="w-full">
             <Navbar />
             <Routes>
               <Route path="/" element={<LandingPage />} />
