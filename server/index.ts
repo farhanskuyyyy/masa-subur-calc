@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import authRouter from './auth.js';
+import cyclesRouter from './cycles.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -51,6 +52,9 @@ app.get('/api/health', (_req, res) => {
 
 // Authentication routes
 app.use('/api/auth', authRouter);
+
+// Menstrual cycle routes
+app.use('/api/cycles', cyclesRouter);
 
 // 404 handler for unknown routes
 app.use((_req, res) => {

@@ -73,7 +73,7 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center gap-2 sm:gap-3">
                 <Link
                   to="/dashboard"
-                  className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-xl bg-petal-500 hover:bg-petal-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-petal-200 transition-all cursor-pointer"
+                  className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl bg-petal-500 hover:bg-petal-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-petal-200 transition-all cursor-pointer"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="3" width="7" height="7"></rect>
@@ -82,6 +82,17 @@ export const Navbar: React.FC = () => {
                     <rect x="3" y="14" width="7" height="7"></rect>
                   </svg>
                   <span>Dashboard</span>
+                </Link>
+
+                <Link
+                  to="/cycles"
+                  className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border border-petal-200 bg-white hover:bg-petal-50 text-petal-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                  title="Riwayat Siklus Menstruasi"
+                >
+                  <svg className="w-4 h-4 text-petal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="hidden xs:inline">Riwayat Siklus</span>
                 </Link>
 
                 <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-petal-50 border border-petal-100 text-xs text-petal-900 font-medium">

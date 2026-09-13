@@ -1,7 +1,10 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { InfoModal } from '../components/InfoModal';
+import { cyclesApi, type UserCycle } from '../lib/api';
+import { PhaseProgress } from '../components/PhaseProgress';
+import { CycleCard } from '../components/CycleCard';
 import {
   addDays,
   diffInDays,
@@ -16,7 +19,7 @@ import {
 import type { DayEvaluation, MonthCalendarData } from '../types/calculator';
 
 export const DashboardPage: React.FC = () => {
-  const { user, signOut, isDemoUser } = useAuth();
+  const { user, signOut, isDemoUser, token } = useAuth();
   const navigate = useNavigate();
 
   // Form State
@@ -30,6 +33,11 @@ export const DashboardPage: React.FC = () => {
   const [lutealPhase, setLutealPhase] = useState<number>(14);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState<boolean>(false);
 
+  // Saved cycles state
+  const [savedCycles, setSavedCycles] = useState<UserCycle[]>([]);
+  const [savedCurrentCycle, setSavedCurrentCycle] = useState<UserCycle | null>(null);
+  const [isSavingCycle, setIsSavingCycle] = useState<boolean>(false);
+
   // Results visibility & calculation state
   const [hasCalculated, setHasCalculated] = useState<boolean>(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -37,6 +45,40 @@ export const DashboardPage: React.FC = () => {
   const [isInfoOpen, setIsInfoOpen] = useState<boolean>(false);
 
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  const fetchUserCycles = useCallback(async () => {
+    if (!token) return;
+    try {
+      const [allRes, currRes] = await Promise.all([
+        cyclesApi.getAll(token),
+        cyclesApi.getCurrent(token),
+      ]);
+      setSavedCycles(allRes.cycles || []);
+      setSavedCurrentCycle(currRes.cycle || null);
+    } catch (err) {
+      console.warn('Gagal memuat siklus tersimpan:', err);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchUserCycles();
+  }, [fetchUserCycles]);
+
+  // Check if there is an existing saved cycle close to the current input date
+  const matchingCycle = useMemo(() => {
+    if (!lastPeriodInput || savedCycles.length === 0) return null;
+    const [iy, im, id] = lastPeriodInput.split('-').map(Number);
+    const inputDate = new Date(iy, im - 1, id);
+
+    return (
+      savedCycles.find((c) => {
+        const [cy, cm, cd] = c.cycle_start_date.split('-').map(Number);
+        const cDate = new Date(cy, cm - 1, cd);
+        const diff = Math.abs(Math.round((inputDate.getTime() - cDate.getTime()) / (1000 * 60 * 60 * 24)));
+        return diff <= 21;
+      }) || null
+    );
+  }, [lastPeriodInput, savedCycles]);
 
   const handleLogout = async () => {
     await signOut();
@@ -47,7 +89,48 @@ export const DashboardPage: React.FC = () => {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage(null);
-    }, 2500);
+    }, 2800);
+  };
+
+  const handleSaveCycle = async () => {
+    if (!token) {
+      showToast('Harap login untuk menyimpan siklus.');
+      return;
+    }
+    setIsSavingCycle(true);
+    try {
+      const res = await cyclesApi.create(token, {
+        cycle_start_date: lastPeriodInput,
+        cycle_length: cycleLength,
+        period_duration: periodDuration,
+        luteal_phase_length: lutealPhase,
+      });
+      showToast(res.message || 'Siklus berhasil disimpan ke riwayat!');
+      await fetchUserCycles();
+    } catch (err: any) {
+      showToast(err.message || 'Gagal menyimpan data siklus.');
+    } finally {
+      setIsSavingCycle(false);
+    }
+  };
+
+  const handleUpdateCycle = async () => {
+    if (!token || !matchingCycle) return;
+    setIsSavingCycle(true);
+    try {
+      const res = await cyclesApi.update(token, matchingCycle.id, {
+        cycle_start_date: lastPeriodInput,
+        cycle_length: cycleLength,
+        period_duration: periodDuration,
+        luteal_phase_length: lutealPhase,
+      });
+      showToast(res.message || 'Siklus berhasil diperbarui!');
+      await fetchUserCycles();
+    } catch (err: any) {
+      showToast(err.message || 'Gagal memperbarui data siklus.');
+    } finally {
+      setIsSavingCycle(false);
+    }
   };
 
   // Validate and compute metrics
@@ -293,6 +376,28 @@ export const DashboardPage: React.FC = () => {
           </button>
         </div>
       </section>
+
+      {/* CURRENT ACTIVE CYCLE PHASE PROGRESS */}
+      {savedCurrentCycle && (
+        <section className="mb-8 animate-in fade-in duration-300">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🌸</span>
+              <h2 className="font-display font-bold text-base sm:text-lg text-ink-primary">
+                Fase Siklus Hari Ini
+              </h2>
+            </div>
+            <Link
+              to="/cycles"
+              className="text-xs font-semibold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl border border-rose-200 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <span>Riwayat Siklus</span>
+              <span>→</span>
+            </Link>
+          </div>
+          <PhaseProgress cycle={savedCurrentCycle} />
+        </section>
+      )}
 
       {/* CALCULATOR INPUT CARD */}
       <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-rose-100 mb-8 transition-all">
@@ -601,6 +706,63 @@ export const DashboardPage: React.FC = () => {
       {/* RESULTS SECTION */}
       {hasCalculated && calculatedMetrics && todayEval && (
         <section ref={resultsRef} className="space-y-8">
+          {/* SAVE / UPDATE SIKLUS BANNER */}
+          <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 rounded-3xl p-6 sm:p-7 text-white shadow-lg shadow-rose-200/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition-all animate-in fade-in">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">💾</span>
+                <h3 className="font-display font-bold text-lg sm:text-xl">
+                  {matchingCycle ? 'Perbarui Siklus di Riwayat' : 'Simpan Siklus Menstruasi Anda'}
+                </h3>
+              </div>
+              <p className="text-xs sm:text-sm text-rose-100 max-w-xl leading-relaxed">
+                {matchingCycle ? (
+                  <>
+                    Ditemukan siklus tersimpan dengan HPHT <strong>{matchingCycle.cycle_start_date}</strong>. Klik <strong>'Update Siklus'</strong> untuk memperbarui prediksi siklus ini, atau simpan baru jika ini periode haid berikutnya.
+                  </>
+                ) : (
+                  'Simpan hasil perhitungan ini ke database agar fase menstruasi, masa subur, dan riwayat siklus Anda tercatat secara konsisten di akun Anda.'
+                )}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto flex-shrink-0">
+              {matchingCycle ? (
+                <>
+                  <button
+                    type="button"
+                    disabled={isSavingCycle}
+                    onClick={handleUpdateCycle}
+                    className="flex-1 md:flex-initial px-5 py-3 rounded-2xl bg-white text-rose-700 hover:bg-rose-50 font-display font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    <span>🔄</span>
+                    <span>{isSavingCycle ? 'Memperbarui...' : 'Update Siklus'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSavingCycle}
+                    onClick={handleSaveCycle}
+                    className="flex-1 md:flex-initial px-4 py-3 rounded-2xl bg-rose-700/60 hover:bg-rose-700 text-white font-display font-bold text-xs border border-white/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    title="Simpan sebagai siklus baru"
+                  >
+                    <span>➕</span>
+                    <span>Simpan Baru</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  disabled={isSavingCycle}
+                  onClick={handleSaveCycle}
+                  className="w-full md:w-auto px-6 py-3.5 rounded-2xl bg-white text-rose-700 hover:bg-rose-50 font-display font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  <span>💾</span>
+                  <span>{isSavingCycle ? 'Menyimpan...' : 'Simpan Siklus'}</span>
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* CENTERPIECE: FLO DAILY DIAL */}
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-rose-100 text-center relative overflow-hidden">
             <div className="flex items-center justify-between mb-4">
@@ -1012,9 +1174,96 @@ export const DashboardPage: React.FC = () => {
             </div>
           )}
 
+          {/* RIWAYAT SIKLUS SECTION */}
+          <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-rose-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-rose-100">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">📋</span>
+                <div>
+                  <h3 className="font-display font-bold text-lg sm:text-xl text-ink-primary">
+                    Riwayat Siklus Tersimpan
+                  </h3>
+                  <p className="text-xs text-ink-secondary">
+                    Daftar siklus dan fase menstruasi yang tercatat di akun Anda
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                to="/cycles"
+                className="px-4 py-2 rounded-xl bg-petal-50 hover:bg-petal-100 text-petal-800 border border-petal-200 text-xs font-semibold flex items-center gap-1.5 transition-colors self-start sm:self-auto cursor-pointer"
+              >
+                <span>Lihat Semua Riwayat ({savedCycles.length})</span>
+                <span>→</span>
+              </Link>
+            </div>
+
+            {savedCycles.length === 0 ? (
+              <div className="p-8 rounded-2xl bg-rose-50/40 border border-rose-100 text-center space-y-3">
+                <div className="text-3xl">🌸</div>
+                <p className="text-xs sm:text-sm text-ink-secondary max-w-md mx-auto leading-relaxed">
+                  Belum ada riwayat siklus yang disimpan. Klik tombol <strong>'Simpan Siklus'</strong> di atas untuk menyimpan prediksi fase hormonal dan memantaunya secara real-time.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSaveCycle}
+                  disabled={isSavingCycle}
+                  className="px-5 py-2.5 rounded-xl bg-petal-600 hover:bg-petal-700 text-white text-xs font-bold shadow-md shadow-petal-200 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isSavingCycle ? 'Menyimpan...' : 'Simpan Perhitungan Sekarang'}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {savedCycles.slice(0, 2).map((c, idx) => (
+                  <CycleCard
+                    key={c.id}
+                    cycle={c}
+                    isCurrent={idx === 0}
+                    onDelete={async (id) => {
+                      if (!token) return;
+                      try {
+                        await cyclesApi.delete(token, id);
+                        showToast('Siklus berhasil dihapus dari riwayat.');
+                        fetchUserCycles();
+                      } catch (err: any) {
+                        showToast(err.message || 'Gagal menghapus siklus.');
+                      }
+                    }}
+                  />
+                ))}
+                {savedCycles.length > 2 && (
+                  <div className="text-center pt-2">
+                    <Link
+                      to="/cycles"
+                      className="text-xs font-bold text-petal-700 hover:text-petal-900 transition-colors"
+                    >
+                      Buka Halaman Riwayat untuk melihat {savedCycles.length - 2} siklus lainnya →
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+
           {/* ACTION BUTTONS & MEDICAL DISCLAIMER */}
           <div className="text-center space-y-4 pt-2">
             <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={matchingCycle ? handleUpdateCycle : handleSaveCycle}
+                disabled={isSavingCycle}
+                className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold text-xs shadow-md shadow-rose-200 hover:from-rose-600 hover:to-pink-600 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <span>{matchingCycle ? '🔄' : '💾'}</span>
+                <span>
+                  {isSavingCycle
+                    ? 'Memproses...'
+                    : matchingCycle
+                    ? 'Update Siklus Ini'
+                    : 'Simpan Siklus'}
+                </span>
+              </button>
               <button
                 type="button"
                 onClick={handleCopySummary}

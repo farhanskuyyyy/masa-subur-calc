@@ -8,6 +8,7 @@ import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { CycleHistoryPage } from './pages/CycleHistoryPage';
 
 export const App: React.FC = () => {
   return (
@@ -25,6 +26,14 @@ export const App: React.FC = () => {
                 element={
                   <ProtectedRoute>
                     <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/cycles"
+                element={
+                  <ProtectedRoute>
+                    <CycleHistoryPage />
                   </ProtectedRoute>
                 }
               />
