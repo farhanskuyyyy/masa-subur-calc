@@ -28,9 +28,9 @@
   --font-sans: 'Plus Jakarta Sans', sans-serif;
   --font-display: 'Outfit', sans-serif;
 
-  --shadow-flo-card: 0 10px 32px -6px rgba(219, 50, 100, 0.08), 0 4px 16px -2px rgba(36, 27, 30, 0.03);
-  --shadow-flo-hover: 0 16px 40px -4px rgba(219, 50, 100, 0.14), 0 6px 20px -2px rgba(36, 27, 30, 0.04);
-  --shadow-flo-dial: 0 12px 36px -4px rgba(219, 50, 100, 0.18);
+  --shadow-luna-card: 0 10px 32px -6px rgba(219, 50, 100, 0.08), 0 4px 16px -2px rgba(36, 27, 30, 0.03);
+  --shadow-luna-hover: 0 16px 40px -4px rgba(219, 50, 100, 0.14), 0 6px 20px -2px rgba(36, 27, 30, 0.04);
+  --shadow-luna-dial: 0 12px 36px -4px rgba(219, 50, 100, 0.18);
 }
 
 body {

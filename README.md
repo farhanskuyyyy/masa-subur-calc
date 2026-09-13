@@ -16,7 +16,7 @@ Aplikasi web modern berbasis **React 19**, **TypeScript**, **Vite**, dan **Tailw
   - 🥚 **Ovulasi Puncak**: Rose menyala dengan animasi glow
   - 🛡️ **Kurang Subur**: Abu-abu netral / Aman
 - 🧬 **Literasi Biologis Tubuh**: Klik tanggal manapun pada kalender untuk melihat status fase hormonal, karakteristik lendir serviks (tipe putih telur mentah), dan perubahan suhu basal tubuh (BBT).
-- ⭕ **Flo Cycle Dial Centerpiece**: Indikator lingkaran progres siklus harian interaktif dan estimasi peluang kehamilan hari ini.
+- ⭕ **Luna Cycle Dial Centerpiece**: Indikator lingkaran progres siklus harian interaktif dan estimasi peluang kehamilan hari ini.
 - 🔒 **Privasi 100% Terjaga**: Seluruh perhitungan siklus dihitung langsung di browser (client-side). Data sensitif Anda aman.
 - 🔐 **Autentikasi Mandiri Express + SQLite & Mode Demo**:
   - Backend API lokal mandiri tanpa ketergantungan pihak ketiga (Supabase dihapus sepenuhnya).
@@ -30,7 +30,7 @@ Aplikasi web modern berbasis **React 19**, **TypeScript**, **Vite**, dan **Tailw
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 19 + TypeScript + Vite
-- **Styling**: Tailwind CSS (Palet tema Flo: rose, petal, amber, emerald, violet)
+- **Styling**: Tailwind CSS (Palet tema Luna: rose, petal, amber, emerald, violet)
 - **Routing**: React Router DOM (v7)
 - **Backend**: Express (Node.js + TypeScript via `tsx`)
 - **Database**: SQLite (`better-sqlite3` dengan WAL mode)

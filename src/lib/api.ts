@@ -52,6 +52,27 @@ export interface UserCycle {
   }>;
 }
 
+export interface UserCheckin {
+  id: string;
+  user_id: string;
+  cycle_id: string;
+  checkin_date: string;
+  period_started: boolean;
+  notes?: string | null;
+  created_at: string;
+}
+
+export interface UserSymptom {
+  id: string;
+  user_id: string;
+  cycle_id: string;
+  checkin_id?: string | null;
+  day_number: number;
+  symptoms: Record<string, any>;
+  suggestion?: string | null;
+  created_at: string;
+}
+
 export interface CycleTodayStatus {
   has_cycle: boolean;
   today?: string;
@@ -478,5 +499,138 @@ export const cyclesApi = {
       },
     });
     return handleResponse<{ message: string; deleted_id?: string }>(res);
+  },
+
+  async checkin(
+    token: string,
+    cycleId: string,
+    data: {
+      checkin_date: string;
+      period_started: boolean;
+      notes?: string;
+    }
+  ): Promise<{ message: string; checkin: UserCheckin }> {
+    if (token === 'demo-token-mock') {
+      const stored = localStorage.getItem('luna_demo_checkins');
+      const list: UserCheckin[] = stored ? JSON.parse(stored) : [];
+      const newCheckin: UserCheckin = {
+        id: `demo-checkin-${Date.now()}`,
+        user_id: 'demo-user-12345',
+        cycle_id: cycleId,
+        checkin_date: data.checkin_date,
+        period_started: data.period_started,
+        notes: data.notes || null,
+        created_at: new Date().toISOString(),
+      };
+      const filtered = list.filter(
+        (c) => !(c.cycle_id === cycleId && c.checkin_date === data.checkin_date)
+      );
+      filtered.unshift(newCheckin);
+      localStorage.setItem('luna_demo_checkins', JSON.stringify(filtered));
+      return {
+        message: data.period_started
+          ? 'Status haid berhasil dikonfirmasi dimulai.'
+          : 'Status check-in berhasil dicatat.',
+        checkin: newCheckin,
+      };
+    }
+
+    const res = await fetch(`${BASE_URL}/api/cycles/${cycleId}/checkin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<{ message: string; checkin: UserCheckin }>(res);
+  },
+
+  async getCheckins(token: string, cycleId: string): Promise<{ checkins: UserCheckin[] }> {
+    if (token === 'demo-token-mock') {
+      const stored = localStorage.getItem('luna_demo_checkins');
+      const list: UserCheckin[] = stored ? JSON.parse(stored) : [];
+      return { checkins: list.filter((c) => c.cycle_id === cycleId) };
+    }
+
+    const res = await fetch(`${BASE_URL}/api/cycles/${cycleId}/checkins`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return handleResponse<{ checkins: UserCheckin[] }>(res);
+  },
+
+  async saveSymptoms(
+    token: string,
+    cycleId: string,
+    data: {
+      day_number: number;
+      symptoms: Record<string, any>;
+      suggestion?: string;
+      checkin_id?: string;
+    }
+  ): Promise<{ message: string; symptom: UserSymptom }> {
+    if (token === 'demo-token-mock') {
+      const stored = localStorage.getItem('luna_demo_symptoms');
+      const list: UserSymptom[] = stored ? JSON.parse(stored) : [];
+      let suggestion = data.suggestion;
+      if (!suggestion) {
+        if (data.symptoms.bleeding === 'ya' && data.symptoms.pain === 'ya') {
+          suggestion = 'Konsultasi dokter jika berlangsung lebih dari 7 hari';
+        } else if (data.symptoms.cramps === 'berat') {
+          suggestion = 'Minum air hangat, istirahat cukup, hindari makanan pedas';
+        } else if (data.symptoms.mood === 'buruk') {
+          suggestion = 'Olahraga ringan seperti yoga atau jalan kaki bisa membantu';
+        } else {
+          suggestion = 'Istirahat cukup dan jaga hidrasi tubuh dengan baik.';
+        }
+      }
+      const newSymptom: UserSymptom = {
+        id: `demo-symptom-${Date.now()}`,
+        user_id: 'demo-user-12345',
+        cycle_id: cycleId,
+        checkin_id: data.checkin_id || null,
+        day_number: data.day_number,
+        symptoms: data.symptoms,
+        suggestion,
+        created_at: new Date().toISOString(),
+      };
+      const filtered = list.filter(
+        (s) => !(s.cycle_id === cycleId && s.day_number === data.day_number)
+      );
+      filtered.unshift(newSymptom);
+      localStorage.setItem('luna_demo_symptoms', JSON.stringify(filtered));
+      return { message: 'Gejala berhasil disimpan (Demo).', symptom: newSymptom };
+    }
+
+    const res = await fetch(`${BASE_URL}/api/cycles/${cycleId}/symptoms`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<{ message: string; symptom: UserSymptom }>(res);
+  },
+
+  async getSymptoms(token: string, cycleId: string): Promise<{ symptoms: UserSymptom[] }> {
+    if (token === 'demo-token-mock') {
+      const stored = localStorage.getItem('luna_demo_symptoms');
+      const list: UserSymptom[] = stored ? JSON.parse(stored) : [];
+      return { symptoms: list.filter((s) => s.cycle_id === cycleId) };
+    }
+
+    const res = await fetch(`${BASE_URL}/api/cycles/${cycleId}/symptoms`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return handleResponse<{ symptoms: UserSymptom[] }>(res);
   },
 };

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { cyclesApi, type UserCycle } from '../lib/api';
 import { CycleCard } from '../components/CycleCard';
 import { PhaseProgress } from '../components/PhaseProgress';
+import { DatePicker } from '../components/DatePicker';
 
 export const CycleHistoryPage: React.FC = () => {
   const { token, isDemoUser } = useAuth();
@@ -272,15 +273,12 @@ export const CycleHistoryPage: React.FC = () => {
 
             <form onSubmit={handleSaveEdit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-ink-primary mb-1">
-                  Hari Pertama Haid Terakhir (HPHT)
-                </label>
-                <input
-                  type="date"
+                <DatePicker
+                  label="Hari Pertama Haid Terakhir (HPHT)"
                   required
                   value={editHpht}
-                  onChange={(e) => setEditHpht(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-rose-200 bg-rose-50/30 text-ink-primary text-sm font-semibold focus:border-rose-400 focus:bg-white outline-none"
+                  onChange={(val) => setEditHpht(val)}
+                  placeholder="Pilih HPHT..."
                 />
               </div>
 
@@ -375,15 +373,12 @@ export const CycleHistoryPage: React.FC = () => {
 
             <form onSubmit={handleSaveReset} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-ink-primary mb-1">
-                  HPHT Baru / Aktual
-                </label>
-                <input
-                  type="date"
+                <DatePicker
+                  label="HPHT Baru / Aktual"
                   required
                   value={resetHpht}
-                  onChange={(e) => setResetHpht(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-rose-200 bg-rose-50/30 text-ink-primary text-sm font-semibold focus:border-rose-400 focus:bg-white outline-none"
+                  onChange={(val) => setResetHpht(val)}
+                  placeholder="Pilih HPHT baru..."
                 />
               </div>
 

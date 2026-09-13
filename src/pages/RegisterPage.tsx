@@ -82,7 +82,7 @@ export const RegisterPage: React.FC = () => {
         </div>
 
         {/* Card Form */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-rose-100">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-100">
           {!isConfigured && (
             <div className="mb-5 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
               <div className="flex items-start gap-2">

@@ -52,10 +52,41 @@ db.exec(`
     FOREIGN KEY (cycle_id) REFERENCES user_cycles(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS user_checkins (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    cycle_id TEXT NOT NULL,
+    checkin_date TEXT NOT NULL,
+    period_started INTEGER NOT NULL CHECK(period_started IN (0, 1)),
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (cycle_id) REFERENCES user_cycles(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS user_symptoms (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    cycle_id TEXT NOT NULL,
+    checkin_id TEXT,
+    day_number INTEGER NOT NULL CHECK(day_number >= 1 AND day_number <= 5),
+    symptoms TEXT NOT NULL,
+    suggestion TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (cycle_id) REFERENCES user_cycles(id) ON DELETE CASCADE,
+    FOREIGN KEY (checkin_id) REFERENCES user_checkins(id) ON DELETE SET NULL
+  );
+
   CREATE INDEX IF NOT EXISTS idx_user_cycles_user_id ON user_cycles(user_id);
   CREATE INDEX IF NOT EXISTS idx_user_cycles_start_date ON user_cycles(cycle_start_date);
   CREATE INDEX IF NOT EXISTS idx_user_cycle_phases_cycle_id ON user_cycle_phases(cycle_id);
   CREATE INDEX IF NOT EXISTS idx_user_cycle_phases_user_id ON user_cycle_phases(user_id);
+  CREATE INDEX IF NOT EXISTS idx_user_checkins_cycle_id ON user_checkins(cycle_id);
+  CREATE INDEX IF NOT EXISTS idx_user_checkins_user_id ON user_checkins(user_id);
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_user_checkins_unique ON user_checkins(user_id, cycle_id, checkin_date);
+  CREATE INDEX IF NOT EXISTS idx_user_symptoms_cycle_id ON user_symptoms(cycle_id);
+  CREATE INDEX IF NOT EXISTS idx_user_symptoms_user_id ON user_symptoms(user_id);
 `);
 
 export interface UserRecord {
@@ -334,6 +365,119 @@ export const deleteUserCycle = (cycleId: string, userId: string): boolean => {
   });
 
   return transaction();
+};
+
+export interface UserCheckinRecord {
+  id: string;
+  user_id: string;
+  cycle_id: string;
+  checkin_date: string;
+  period_started: boolean;
+  notes?: string | null;
+  created_at: string;
+}
+
+export interface UserSymptomRecord {
+  id: string;
+  user_id: string;
+  cycle_id: string;
+  checkin_id?: string | null;
+  day_number: number;
+  symptoms: string;
+  suggestion?: string | null;
+  created_at: string;
+}
+
+export const getUserCheckins = (cycleId: string, userId: string): UserCheckinRecord[] => {
+  const stmt = db.prepare(`
+    SELECT id, user_id, cycle_id, checkin_date, period_started, notes, created_at
+    FROM user_checkins
+    WHERE cycle_id = ? AND user_id = ?
+    ORDER BY checkin_date DESC
+  `);
+  const rows = stmt.all(cycleId, userId) as any[];
+  return rows.map((r) => ({
+    ...r,
+    period_started: Boolean(r.period_started),
+  }));
+};
+
+export const saveUserCheckin = (checkin: {
+  id: string;
+  user_id: string;
+  cycle_id: string;
+  checkin_date: string;
+  period_started: boolean;
+  notes?: string | null;
+}): UserCheckinRecord => {
+  const stmt = db.prepare(`
+    INSERT INTO user_checkins (id, user_id, cycle_id, checkin_date, period_started, notes, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(user_id, cycle_id, checkin_date) DO UPDATE SET
+      period_started = excluded.period_started,
+      notes = excluded.notes,
+      created_at = CURRENT_TIMESTAMP
+  `);
+  stmt.run(
+    checkin.id,
+    checkin.user_id,
+    checkin.cycle_id,
+    checkin.checkin_date,
+    checkin.period_started ? 1 : 0,
+    checkin.notes ?? null
+  );
+
+  const getStmt = db.prepare(`
+    SELECT id, user_id, cycle_id, checkin_date, period_started, notes, created_at
+    FROM user_checkins
+    WHERE user_id = ? AND cycle_id = ? AND checkin_date = ?
+  `);
+  const row = getStmt.get(checkin.user_id, checkin.cycle_id, checkin.checkin_date) as any;
+  return {
+    ...row,
+    period_started: Boolean(row.period_started),
+  };
+};
+
+export const getUserSymptoms = (cycleId: string, userId: string): UserSymptomRecord[] => {
+  const stmt = db.prepare(`
+    SELECT id, user_id, cycle_id, checkin_id, day_number, symptoms, suggestion, created_at
+    FROM user_symptoms
+    WHERE cycle_id = ? AND user_id = ?
+    ORDER BY day_number ASC, created_at DESC
+  `);
+  return stmt.all(cycleId, userId) as UserSymptomRecord[];
+};
+
+export const saveUserSymptom = (symptom: {
+  id: string;
+  user_id: string;
+  cycle_id: string;
+  checkin_id?: string | null;
+  day_number: number;
+  symptoms: string;
+  suggestion?: string | null;
+}): UserSymptomRecord => {
+  const stmt = db.prepare(`
+    INSERT INTO user_symptoms (id, user_id, cycle_id, checkin_id, day_number, symptoms, suggestion, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+  `);
+  stmt.run(
+    symptom.id,
+    symptom.user_id,
+    symptom.cycle_id,
+    symptom.checkin_id ?? null,
+    symptom.day_number,
+    symptom.symptoms,
+    symptom.suggestion ?? null
+  );
+
+  const getStmt = db.prepare(`
+    SELECT id, user_id, cycle_id, checkin_id, day_number, symptoms, suggestion, created_at
+    FROM user_symptoms
+    WHERE id = ?
+  `);
+  return getStmt.get(symptom.id) as UserSymptomRecord;
 };
 
 export default db;

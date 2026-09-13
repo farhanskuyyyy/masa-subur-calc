@@ -7,6 +7,10 @@ import {
   createUserCycleWithPhases,
   updateUserCycleWithPhases,
   deleteUserCycle,
+  getUserCheckins,
+  saveUserCheckin,
+  getUserSymptoms,
+  saveUserSymptom,
   type PhaseType,
   type UserCycleWithPhases,
 } from './db.js';
@@ -600,6 +604,184 @@ router.delete('/:id', (req: AuthenticatedRequest, res: Response): void => {
   } catch (error) {
     console.error('Error in DELETE /api/cycles/:id:', error);
     res.status(500).json({ error: 'Gagal menghapus data siklus.' });
+  }
+});
+
+// --- Period Check-in Endpoints ---
+
+// POST /api/cycles/:id/checkin - Save check-in for a date
+router.post('/:id/checkin', (req: AuthenticatedRequest, res: Response): void => {
+  try {
+    const userId = req.user!.id;
+    const cycleId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+    const existingCycle = getUserCycleById(cycleId, userId);
+    if (!existingCycle) {
+      res.status(404).json({ error: 'Data siklus tidak ditemukan atau bukan milik Anda.' });
+      return;
+    }
+
+    const { checkin_date, period_started, notes } = req.body;
+    if (!checkin_date || typeof checkin_date !== 'string') {
+      res.status(400).json({ error: 'Tanggal check-in wajib diisi dengan format YYYY-MM-DD.' });
+      return;
+    }
+
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(checkin_date)) {
+      res.status(400).json({ error: 'Format tanggal harus YYYY-MM-DD.' });
+      return;
+    }
+
+    if (typeof period_started !== 'boolean') {
+      res.status(400).json({ error: 'Status period_started harus bernilai boolean (true/false).' });
+      return;
+    }
+
+    const checkinId = crypto.randomUUID();
+    const saved = saveUserCheckin({
+      id: checkinId,
+      user_id: userId,
+      cycle_id: cycleId,
+      checkin_date,
+      period_started,
+      notes: typeof notes === 'string' ? notes : null,
+    });
+
+    res.status(200).json({
+      message: period_started
+        ? 'Status haid berhasil dikonfirmasi dimulai.'
+        : 'Status check-in berhasil dicatat (belum haid).',
+      checkin: saved,
+    });
+  } catch (error) {
+    console.error('Error in POST /api/cycles/:id/checkin:', error);
+    res.status(500).json({ error: 'Gagal menyimpan check-in haid.' });
+  }
+});
+
+// GET /api/cycles/:id/checkins - Get all check-ins for a cycle
+router.get('/:id/checkins', (req: AuthenticatedRequest, res: Response): void => {
+  try {
+    const userId = req.user!.id;
+    const cycleId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+    const existingCycle = getUserCycleById(cycleId, userId);
+    if (!existingCycle) {
+      res.status(404).json({ error: 'Data siklus tidak ditemukan atau bukan milik Anda.' });
+      return;
+    }
+
+    const checkins = getUserCheckins(cycleId, userId);
+    res.status(200).json({ checkins });
+  } catch (error) {
+    console.error('Error in GET /api/cycles/:id/checkins:', error);
+    res.status(500).json({ error: 'Gagal mengambil riwayat check-in.' });
+  }
+});
+
+// --- Menstrual Symptom Questionnaire Endpoints ---
+
+// Helper function to generate automatic suggestions based on symptoms
+function generateSymptomSuggestion(symptoms: any): string {
+  const cramps = symptoms.cramps || symptoms.sakit_perut;
+  const mood = symptoms.mood;
+  const bleeding = symptoms.bleeding || symptoms.pendarahan_banyak;
+  const pain = symptoms.pain || symptoms.masih_sakit;
+
+  if (bleeding === 'ya' && pain === 'ya') {
+    return 'Konsultasi dokter jika berlangsung lebih dari 7 hari';
+  }
+  if (cramps === 'berat') {
+    return 'Minum air hangat, istirahat cukup, hindari makanan pedas';
+  }
+  if (mood === 'buruk') {
+    return 'Olahraga ringan seperti yoga atau jalan kaki bisa membantu';
+  }
+  return 'Istirahat yang cukup, jaga asupan cairan, dan konsumsi makanan kaya gizi seimbang.';
+}
+
+// POST /api/cycles/:id/symptoms - Save symptoms for a day
+router.post('/:id/symptoms', (req: AuthenticatedRequest, res: Response): void => {
+  try {
+    const userId = req.user!.id;
+    const cycleId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+    const existingCycle = getUserCycleById(cycleId, userId);
+    if (!existingCycle) {
+      res.status(404).json({ error: 'Data siklus tidak ditemukan atau bukan milik Anda.' });
+      return;
+    }
+
+    const { day_number, symptoms, checkin_id } = req.body;
+    const dayNum = Number(day_number);
+
+    if (!Number.isInteger(dayNum) || dayNum < 1 || dayNum > 5) {
+      res.status(400).json({ error: 'Hari ke (day_number) harus berupa angka antara 1 dan 5.' });
+      return;
+    }
+
+    if (!symptoms || typeof symptoms !== 'object') {
+      res.status(400).json({ error: 'Data gejala (symptoms) wajib diisi dalam format objek.' });
+      return;
+    }
+
+    const suggestion = req.body.suggestion || generateSymptomSuggestion(symptoms);
+    const symptomId = crypto.randomUUID();
+
+    const saved = saveUserSymptom({
+      id: symptomId,
+      user_id: userId,
+      cycle_id: cycleId,
+      checkin_id: typeof checkin_id === 'string' ? checkin_id : null,
+      day_number: dayNum,
+      symptoms: JSON.stringify(symptoms),
+      suggestion,
+    });
+
+    res.status(201).json({
+      message: 'Gejala harian berhasil disimpan.',
+      symptom: {
+        ...saved,
+        symptoms: JSON.parse(saved.symptoms),
+      },
+    });
+  } catch (error) {
+    console.error('Error in POST /api/cycles/:id/symptoms:', error);
+    res.status(500).json({ error: 'Gagal menyimpan data gejala menstruasi.' });
+  }
+});
+
+// GET /api/cycles/:id/symptoms - Get all symptoms for a cycle
+router.get('/:id/symptoms', (req: AuthenticatedRequest, res: Response): void => {
+  try {
+    const userId = req.user!.id;
+    const cycleId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+    const existingCycle = getUserCycleById(cycleId, userId);
+    if (!existingCycle) {
+      res.status(404).json({ error: 'Data siklus tidak ditemukan atau bukan milik Anda.' });
+      return;
+    }
+
+    const rawSymptoms = getUserSymptoms(cycleId, userId);
+    const parsedSymptoms = rawSymptoms.map((s) => {
+      let parsedObj = {};
+      try {
+        parsedObj = JSON.parse(s.symptoms);
+      } catch {
+        parsedObj = {};
+      }
+      return {
+        ...s,
+        symptoms: parsedObj,
+      };
+    });
+
+    res.status(200).json({ symptoms: parsedSymptoms });
+  } catch (error) {
+    console.error('Error in GET /api/cycles/:id/symptoms:', error);
+    res.status(500).json({ error: 'Gagal mengambil riwayat gejala menstruasi.' });
   }
 });
 

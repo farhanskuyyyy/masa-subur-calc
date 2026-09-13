@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { InfoModal } from './InfoModal';
 
 export const Navbar: React.FC = () => {
   const { user, signOut, isDemoUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -13,12 +14,21 @@ export const Navbar: React.FC = () => {
     navigate('/login');
   };
 
+  const getNavLinkClass = (href: string) => {
+    const isActive = location.pathname === href;
+    return `h-10 px-2 sm:px-3 flex items-center gap-1.5 text-xs sm:text-sm transition-colors cursor-pointer ${
+      isActive
+        ? 'font-bold text-rose-600 border-b-2 border-rose-500'
+        : 'text-gray-600 hover:text-rose-500 border-b-2 border-transparent'
+    }`;
+  };
+
   return (
     <>
-      <header className="sticky top-0 z-30 bg-white/85 backdrop-blur-md border-b border-petal-100 transition-all">
+      <header className="sticky top-0 z-30 bg-white/85 backdrop-blur-md border-b border-rose-100 transition-all">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-petal-600 to-petal-400 flex items-center justify-center text-white shadow-md shadow-petal-300/50 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-white shadow-md shadow-rose-300/50 group-hover:scale-105 transition-transform">
               <svg
                 className="w-6 h-6"
                 viewBox="0 0 24 24"
@@ -38,9 +48,6 @@ export const Navbar: React.FC = () => {
             <div>
               <span className="font-display font-bold text-lg sm:text-xl text-ink-primary tracking-tight flex items-center gap-1.5">
                 Luna
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-petal-100 text-petal-700 font-sans">
-                  Flo Style
-                </span>
               </span>
               <p className="text-[11px] text-ink-muted leading-none hidden sm:block">
                 Kalkulator Masa Subur & Siklus Hormonal
@@ -48,15 +55,15 @@ export const Navbar: React.FC = () => {
             </div>
           </Link>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <button
               type="button"
               onClick={() => setIsInfoOpen(true)}
               aria-label="Informasi Medis & Privasi"
-              className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border border-petal-200 bg-petal-50 hover:bg-petal-100 text-petal-800 text-xs font-semibold flex items-center gap-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-petal-400 cursor-pointer"
+              className="h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-semibold flex items-center gap-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer"
             >
               <svg
-                className="w-4 h-4 text-petal-600"
+                className="w-4 h-4 text-rose-600"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -70,11 +77,11 @@ export const Navbar: React.FC = () => {
             </button>
 
             {user ? (
-              <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Link
                   to="/dashboard"
-                  className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl bg-petal-500 hover:bg-petal-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-petal-200 transition-all cursor-pointer"
-                  title="Kalkulator & Kalender Dashboard"
+                  className={getNavLinkClass('/dashboard')}
+                  title="Dashboard"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="3" width="7" height="7"></rect>
@@ -82,14 +89,13 @@ export const Navbar: React.FC = () => {
                     <rect x="14" y="14" width="7" height="7"></rect>
                     <rect x="3" y="14" width="7" height="7"></rect>
                   </svg>
-                  <span className="hidden sm:inline">Kalkulator & Kalender</span>
-                  <span className="sm:hidden">Dashboard</span>
+                  <span>Dashboard</span>
                 </Link>
 
                 <Link
                   to="/calculator"
-                  className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border border-petal-200 bg-white hover:bg-petal-50 text-petal-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-                  title="Hitung Masa Subur & Siklus Baru"
+                  className={getNavLinkClass('/calculator')}
+                  title="Hitung Siklus"
                 >
                   <span className="text-xs">✨</span>
                   <span>Hitung Siklus</span>
@@ -97,19 +103,19 @@ export const Navbar: React.FC = () => {
 
                 <Link
                   to="/cycles"
-                  className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border border-petal-200 bg-white hover:bg-petal-50 text-petal-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-                  title="Riwayat Siklus Menstruasi"
+                  className={getNavLinkClass('/cycles')}
+                  title="Riwayat Siklus"
                 >
-                  <svg className="w-4 h-4 text-petal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <span className="hidden sm:inline">Riwayat Siklus</span>
                   <span className="sm:hidden">Riwayat</span>
                 </Link>
 
-                <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-petal-50 border border-petal-100 text-xs text-petal-900 font-medium">
+                <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-100 text-xs text-rose-900 font-medium ml-1">
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  <span className="max-w-[130px] truncate">{user.email}</span>
+                  <span className="max-w-[120px] truncate">{user.email}</span>
                   {isDemoUser && (
                     <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
                       Demo
@@ -120,7 +126,7 @@ export const Navbar: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border border-rose-200 bg-white hover:bg-rose-50 text-rose-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="h-9 sm:h-10 px-2.5 sm:px-3 rounded-xl border border-rose-200 bg-white hover:bg-rose-50 text-rose-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ml-1"
                   title="Keluar dari akun"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -132,16 +138,22 @@ export const Navbar: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Link
+                  to="/"
+                  className={getNavLinkClass('/')}
+                >
+                  Beranda
+                </Link>
                 <Link
                   to="/login"
-                  className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-xl border border-petal-200 bg-white hover:bg-petal-50 text-petal-800 text-xs font-semibold flex items-center justify-center transition-colors"
+                  className={getNavLinkClass('/login')}
                 >
                   Masuk
                 </Link>
                 <Link
                   to="/register"
-                  className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-xl bg-gradient-to-r from-petal-600 to-petal-500 hover:from-petal-700 hover:to-petal-600 text-white text-xs font-semibold flex items-center justify-center shadow-md shadow-petal-200 transition-all"
+                  className={getNavLinkClass('/register')}
                 >
                   Daftar
                 </Link>

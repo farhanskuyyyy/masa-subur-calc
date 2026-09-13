@@ -89,7 +89,7 @@ export const LandingPage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1: Metode Kalendar */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 sm:p-7 shadow-flo-card border border-rose-100 hover:shadow-flo-hover hover:border-rose-200 transition-all group">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 sm:p-7 shadow-luna-card border border-rose-100 hover:shadow-luna-hover hover:border-rose-200 transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
               🧬
             </div>
@@ -102,7 +102,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Card 2: Privasi Terjaga */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 sm:p-7 shadow-flo-card border border-rose-100 hover:shadow-flo-hover hover:border-rose-200 transition-all group">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 sm:p-7 shadow-luna-card border border-rose-100 hover:shadow-luna-hover hover:border-rose-200 transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
               🔒
             </div>
@@ -115,7 +115,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Card 3: Visual Kalender */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 sm:p-7 shadow-flo-card border border-rose-100 hover:shadow-flo-hover hover:border-rose-200 transition-all group">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 sm:p-7 shadow-luna-card border border-rose-100 hover:shadow-luna-hover hover:border-rose-200 transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
               🗓️
             </div>
@@ -130,7 +130,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 4 Hormonal Phases Educational Section */}
-      <section className="bg-gradient-to-br from-white via-rose-50/40 to-pink-50/40 rounded-3xl p-6 sm:p-10 shadow-flo-card border border-rose-100 mb-16">
+      <section className="bg-gradient-to-br from-white via-rose-50/40 to-pink-50/40 rounded-3xl p-6 sm:p-10 shadow-luna-card border border-rose-100 mb-16">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
           <div>
             <span className="text-xs font-bold text-rose-600 uppercase tracking-wider">

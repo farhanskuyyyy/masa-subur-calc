@@ -2,14 +2,16 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { InfoModal } from '../components/InfoModal';
-import { cyclesApi, type UserCycle } from '../lib/api';
+import { cyclesApi, type UserCycle, type UserCheckin, type UserSymptom } from '../lib/api';
 import { PhaseProgress } from '../components/PhaseProgress';
+import { SymptomQuestionnaire } from '../components/SymptomQuestionnaire';
 import {
   addDays,
   diffInDays,
   isSameDay,
   formatDateFull,
   formatDateShort,
+  toISODateString,
   computeCycleMetrics,
   evaluateDay,
   getThreeMonthsData,
@@ -59,9 +61,37 @@ export const DashboardPage: React.FC = () => {
     }
   }, [token]);
 
+  const [checkins, setCheckins] = useState<UserCheckin[]>([]);
+  const [symptoms, setSymptoms] = useState<UserSymptom[]>([]);
+  const [isCheckinSubmitting, setIsCheckinSubmitting] = useState<boolean>(false);
+  const [showQuestionnaireExpanded, setShowQuestionnaireExpanded] = useState<boolean>(false);
+
+  const fetchCycleAddons = useCallback(async (cycleId: string) => {
+    if (!token || !cycleId) return;
+    try {
+      const [cRes, sRes] = await Promise.all([
+        cyclesApi.getCheckins(token, cycleId),
+        cyclesApi.getSymptoms(token, cycleId),
+      ]);
+      setCheckins(cRes.checkins || []);
+      setSymptoms(sRes.symptoms || []);
+    } catch (err) {
+      console.warn('Gagal memuat data checkin atau gejala:', err);
+    }
+  }, [token]);
+
   useEffect(() => {
     fetchCyclesData();
   }, [fetchCyclesData]);
+
+  useEffect(() => {
+    if (currentCycle?.id) {
+      fetchCycleAddons(currentCycle.id);
+    } else {
+      setCheckins([]);
+      setSymptoms([]);
+    }
+  }, [currentCycle?.id, fetchCycleAddons]);
 
   const handleLogout = async () => {
     await signOut();
@@ -99,6 +129,71 @@ export const DashboardPage: React.FC = () => {
     return evaluateDay(today, calculatedMetrics);
   }, [today, calculatedMetrics]);
 
+  const todayISO = useMemo(() => toISODateString(today), [today]);
+
+  const todayCheckin = useMemo(() => {
+    return checkins.find((c) => c.checkin_date === todayISO);
+  }, [checkins, todayISO]);
+
+  // Is today within a predicted period window?
+  const isTodayPredictedPeriod = useMemo(() => {
+    if (!calculatedMetrics || !currentCycle) return false;
+    if (todayEval?.phase === 'period') return true;
+    const diffNext = diffInDays(today, calculatedMetrics.nextPeriodDate);
+    if (diffNext >= -3 && diffNext <= currentCycle.period_duration) {
+      return true;
+    }
+    return false;
+  }, [calculatedMetrics, currentCycle, today, todayEval]);
+
+  const predictedPeriodDateStr = useMemo(() => {
+    if (!calculatedMetrics) return '';
+    if (todayEval?.phase === 'period') {
+      return formatDateFull(calculatedMetrics.lastPeriodDate);
+    }
+    return formatDateFull(calculatedMetrics.nextPeriodDate);
+  }, [calculatedMetrics, todayEval]);
+
+  const handleCheckin = async (periodStarted: boolean) => {
+    if (!token || !currentCycle) return;
+    setIsCheckinSubmitting(true);
+    try {
+      const res = await cyclesApi.checkin(token, currentCycle.id, {
+        checkin_date: todayISO,
+        period_started: periodStarted,
+      });
+      setCheckins((prev) => {
+        const filtered = prev.filter((c) => c.checkin_date !== todayISO);
+        return [res.checkin, ...filtered];
+      });
+      showToast(
+        periodStarted
+          ? 'Status haid berhasil dikonfirmasi dimulai!'
+          : 'Status check-in berhasil dicatat (belum haid).'
+      );
+    } catch (err: any) {
+      showToast(err.message || 'Gagal menyimpan check-in.');
+    } finally {
+      setIsCheckinSubmitting(false);
+    }
+  };
+
+  // Menstruation days evaluation for Symptom Questionnaire
+  const isOnMenstruationDays = useMemo(() => {
+    return todayEval?.phase === 'period' || Boolean(todayCheckin?.period_started);
+  }, [todayEval, todayCheckin]);
+
+  const menstruationDayNumber = useMemo(() => {
+    if (todayEval?.phase === 'period') {
+      return Math.min(Math.max(todayEval.cycleDay, 1), 5);
+    }
+    return 1;
+  }, [todayEval]);
+
+  const todaySymptomFilled = useMemo(() => {
+    return symptoms.find((s) => s.day_number === menstruationDayNumber);
+  }, [symptoms, menstruationDayNumber]);
+
   // Selected Day Evaluation
   const selectedDayEval: DayEvaluation | null = useMemo(() => {
     if (!calculatedMetrics) return null;
@@ -135,7 +230,7 @@ export const DashboardPage: React.FC = () => {
     return cycles;
   }, [calculatedMetrics, currentCycle]);
 
-  // Flo Dial calculations
+  // Luna Dial calculations
   const circumference = 2 * Math.PI * 98; // ~615.75
   const progressRatio = useMemo(() => {
     if (!todayEval) return 0;
@@ -155,7 +250,7 @@ export const DashboardPage: React.FC = () => {
     if (todayEval) {
       summary += `Status Hari Ini: Hari ke-${todayEval.cycleDay} (${todayEval.phaseName}), Peluang Hamil: ${todayEval.chanceName} (${todayEval.chancePct})\n`;
     }
-    summary += `\nDipantau secara pribadi dengan standar klinis Flo-style.`;
+    summary += `\nDipantau secara pribadi dengan standar klinis Luna.`;
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard
@@ -246,7 +341,7 @@ export const DashboardPage: React.FC = () => {
         </div>
       ) : !currentCycle ? (
         /* Friendly Empty State When User Has NO Saved Cycles */
-        <section className="bg-white rounded-3xl p-8 sm:p-12 shadow-flo-card border border-rose-100 text-center max-w-2xl mx-auto my-6 animate-in fade-in">
+        <section className="bg-white rounded-3xl p-8 sm:p-12 shadow-luna-card border border-rose-100 text-center max-w-2xl mx-auto my-6 animate-in fade-in">
           <div className="w-20 h-20 rounded-3xl bg-rose-50 border border-rose-100 text-rose-500 flex items-center justify-center text-4xl mx-auto mb-5 shadow-inner">
             🌸
           </div>
@@ -302,6 +397,91 @@ export const DashboardPage: React.FC = () => {
       ) : (
         /* Saved Data Status Overview */
         <section className="space-y-8 animate-in fade-in duration-300">
+          {/* PERIOD CHECK-IN CARD */}
+          {isTodayPredictedPeriod && (
+            <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 rounded-3xl p-6 sm:p-7 text-white shadow-lg shadow-rose-200 border border-rose-300 relative overflow-hidden">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl flex-shrink-0">
+                    🩸
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold uppercase tracking-wider bg-white/25 px-2.5 py-0.5 rounded-full">
+                        Check-in Haid Hari Ini
+                      </span>
+                      {todayCheckin && (
+                        <span className="text-xs bg-emerald-500 text-white font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                          ✓ Sudah Dicatat
+                        </span>
+                      )}
+                    </div>
+                    <h2 className="font-display font-extrabold text-lg sm:text-xl mt-1.5 text-white">
+                      Apakah Haid Anda Sudah Dimulai?
+                    </h2>
+                    <p className="text-xs sm:text-sm text-rose-100 mt-1 max-w-xl leading-relaxed">
+                      Perkiraan tanggal haid Anda:{' '}
+                      <strong className="text-white underline decoration-rose-300">
+                        {predictedPeriodDateStr}
+                      </strong>
+                      . Konfirmasikan kondisi Anda hari ini untuk menjaga akurasi pemantauan siklus.
+                    </p>
+                    {todayCheckin && (
+                      <p className="text-xs font-semibold text-rose-100 mt-2">
+                        Status saat ini:{' '}
+                        <span className="bg-white/20 px-2.5 py-0.5 rounded-lg text-white font-bold">
+                          {todayCheckin.period_started ? '🌸 Sudah Mulai Haid' : '⏳ Belum Mulai Haid'}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 self-start md:self-center flex-shrink-0">
+                  <button
+                    type="button"
+                    disabled={isCheckinSubmitting}
+                    onClick={() => handleCheckin(true)}
+                    className={`px-5 py-2.5 rounded-2xl font-display font-bold text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-50 ${
+                      todayCheckin?.period_started
+                        ? 'bg-white text-rose-700 ring-2 ring-white/80'
+                        : 'bg-white text-rose-600 hover:bg-rose-50'
+                    }`}
+                  >
+                    {isCheckinSubmitting ? (
+                      <span>Memproses...</span>
+                    ) : (
+                      <>
+                        <span>✓</span>
+                        <span>Ya, Sudah</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isCheckinSubmitting}
+                    onClick={() => handleCheckin(false)}
+                    className={`px-5 py-2.5 rounded-2xl font-display font-semibold text-xs border transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-50 ${
+                      todayCheckin && !todayCheckin.period_started
+                        ? 'bg-white/30 border-white text-white font-bold ring-2 ring-white/60'
+                        : 'bg-white/10 hover:bg-white/20 border-white/30 text-white'
+                    }`}
+                  >
+                    {isCheckinSubmitting ? (
+                      <span>Memproses...</span>
+                    ) : (
+                      <>
+                        <span>✕</span>
+                        <span>Belum</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* (e) QUICK SUMMARY CARDS */}
           {calculatedMetrics && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -381,7 +561,7 @@ export const DashboardPage: React.FC = () => {
           )}
 
           {/* (a) PHASE PROGRESS COMPONENT */}
-          <section className="bg-white rounded-3xl p-6 sm:p-7 shadow-flo-card border border-rose-100">
+          <section className="bg-white rounded-3xl p-6 sm:p-7 shadow-luna-card border border-rose-100">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">🌸</span>
@@ -414,9 +594,76 @@ export const DashboardPage: React.FC = () => {
             <PhaseProgress cycle={currentCycle} />
           </section>
 
-          {/* (b) TODAY'S STATUS CARD & CENTERPIECE FLO DAILY DIAL */}
+          {/* SYMPTOM QUESTIONNAIRE SECTION */}
+          {isOnMenstruationDays && currentCycle && (
+            <section className="space-y-4">
+              {todaySymptomFilled && !showQuestionnaireExpanded ? (
+                <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-luna-card border border-rose-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl flex-shrink-0">
+                        ✓
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-display font-bold text-base text-ink-primary">
+                            Kuesioner Gejala Hari ke-{menstruationDayNumber} Sudah Terisi
+                          </h3>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                            Tersimpan
+                          </span>
+                        </div>
+                        <p className="text-xs text-ink-secondary mt-1">
+                          {todaySymptomFilled.suggestion || 'Data gejala harian Anda telah tersimpan.'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowQuestionnaireExpanded(true)}
+                      className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition-colors self-start sm:self-auto cursor-pointer flex items-center gap-1.5"
+                    >
+                      <span>✏️</span>
+                      <span>Ubah Jawaban Gejala</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {todaySymptomFilled && showQuestionnaireExpanded && (
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setShowQuestionnaireExpanded(false)}
+                        className="text-xs font-semibold text-rose-600 hover:text-rose-800 underline cursor-pointer"
+                      >
+                        ✕ Sembunyikan Kuesioner
+                      </button>
+                    </div>
+                  )}
+                  <SymptomQuestionnaire
+                    cycleId={currentCycle.id}
+                    defaultDayNumber={menstruationDayNumber}
+                    checkinId={todayCheckin?.id}
+                    existingSymptoms={symptoms}
+                    onSaved={(savedSymptom) => {
+                      setSymptoms((prev) => {
+                        const filtered = prev.filter((s) => s.day_number !== savedSymptom.day_number);
+                        return [...filtered, savedSymptom];
+                      });
+                      setShowQuestionnaireExpanded(false);
+                      showToast('Gejala berhasil disimpan!');
+                    }}
+                    token={token || ''}
+                  />
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* (b) TODAY'S STATUS CARD & CENTERPIECE LUNA DAILY DIAL */}
           {calculatedMetrics && todayEval && (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-rose-100 text-center relative overflow-hidden">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-100 text-center relative overflow-hidden">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-semibold px-3 py-1 rounded-full bg-rose-100 text-rose-800 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-rose-500"></span>
@@ -427,7 +674,7 @@ export const DashboardPage: React.FC = () => {
                 </span>
               </div>
 
-              {/* Flo Cycle Ring */}
+              {/* Luna Cycle Ring */}
               <div className="relative w-64 h-64 sm:w-72 sm:h-72 mx-auto my-2 flex items-center justify-center">
                 <svg className="w-full h-full" viewBox="0 0 240 240">
                   <circle cx="120" cy="120" r="98" fill="none" stroke="#fdecf0" strokeWidth="16" />
@@ -437,14 +684,14 @@ export const DashboardPage: React.FC = () => {
                     cy="120"
                     r="98"
                     fill="none"
-                    stroke="url(#floDashGradient)"
+                    stroke="url(#lunaDashGradient)"
                     strokeWidth="16"
                     strokeLinecap="round"
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeOffset}
                   />
                   <defs>
-                    <linearGradient id="floDashGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="lunaDashGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#db3264" />
                       <stop offset="50%" stopColor="#ef5582" />
                       <stop offset="100%" stopColor="#f59e0b" />
@@ -623,7 +870,7 @@ export const DashboardPage: React.FC = () => {
 
           {/* (c) CALENDAR 3-MONTH VIEW BASED ON LATEST SAVED CYCLE */}
           {calculatedMetrics && (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-rose-100">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-100">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-rose-100">
                 <div>
                   <div className="flex items-center gap-2">
@@ -747,7 +994,7 @@ export const DashboardPage: React.FC = () => {
 
           {/* SELECTED DAY CLINICAL DETAIL */}
           {selectedDayEval && (
-            <div className="bg-gradient-to-br from-white to-rose-50/50 rounded-3xl p-6 sm:p-8 shadow-flo-card border border-rose-200">
+            <div className="bg-gradient-to-br from-white to-rose-50/50 rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-rose-100">
                 <div>
                   <span className="text-xs font-bold text-rose-700 uppercase tracking-wider">

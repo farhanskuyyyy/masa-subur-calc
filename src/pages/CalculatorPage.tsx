@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { InfoModal } from '../components/InfoModal';
+import { DatePicker } from '../components/DatePicker';
 import { cyclesApi, type UserCycle } from '../lib/api';
 import {
   addDays,
@@ -30,6 +31,27 @@ export const CalculatorPage: React.FC = () => {
   const [periodDuration, setPeriodDuration] = useState<number>(6);
   const [lutealPhase, setLutealPhase] = useState<number>(14);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState<boolean>(false);
+
+  const periodDateStrings = useMemo(() => {
+    if (!lastPeriodInput) return [];
+    try {
+      const [y, m, d] = lastPeriodInput.split('-').map(Number);
+      const start = new Date(y, m - 1, d, 12, 0, 0);
+      const res: string[] = [];
+      const dur = periodDuration || 6;
+      for (let i = 0; i < dur; i++) {
+        const next = new Date(start.getTime());
+        next.setDate(next.getDate() + i);
+        const yStr = next.getFullYear();
+        const mStr = String(next.getMonth() + 1).padStart(2, '0');
+        const dStr = String(next.getDate()).padStart(2, '0');
+        res.push(`${yStr}-${mStr}-${dStr}`);
+      }
+      return res;
+    } catch {
+      return [];
+    }
+  }, [lastPeriodInput, periodDuration]);
 
   // Saved cycles state (to check for matching cycle when saving)
   const [savedCycles, setSavedCycles] = useState<UserCycle[]>([]);
@@ -254,7 +276,7 @@ export const CalculatorPage: React.FC = () => {
     return cycles;
   }, [calculatedMetrics]);
 
-  // Flo Dial calculations
+  // Luna Dial calculations
   const circumference = 2 * Math.PI * 98; // ~615.75
   const progressRatio = useMemo(() => {
     if (!todayEval) return 0;
@@ -377,7 +399,7 @@ export const CalculatorPage: React.FC = () => {
       </section>
 
       {/* CALCULATOR INPUT CARD */}
-      <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-rose-100 mb-8 transition-all">
+      <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-100 mb-8 transition-all">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-6 border-b border-rose-100">
           <div className="flex items-center gap-2.5">
             <span className="text-2xl">🌸</span>
@@ -410,24 +432,14 @@ export const CalculatorPage: React.FC = () => {
         <form onSubmit={handleFormSubmit} className="space-y-6" noValidate>
           {/* 1. Date of Last Period */}
           <div>
-            <label
-              htmlFor="lastPeriodInput"
-              className="block text-sm font-semibold text-ink-primary mb-2 flex items-center justify-between"
-            >
-              <span className="flex items-center gap-2">
-                <span className="text-rose-500">📅</span> Hari Pertama Haid Terakhir (HPHT)
-              </span>
-              <span className="text-xs font-normal text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">
-                Wajib
-              </span>
-            </label>
-            <input
-              type="date"
+            <DatePicker
               id="lastPeriodInput"
+              label="Hari Pertama Haid Terakhir (HPHT)"
               required
               value={lastPeriodInput}
-              onChange={(e) => setLastPeriodInput(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-base sm:text-lg focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100 outline-none transition-all"
+              onChange={(val) => setLastPeriodInput(val)}
+              placeholder="Pilih tanggal HPHT..."
+              menstruationDays={periodDateStrings}
             />
 
             {/* Quick Date Chips */}
@@ -740,8 +752,8 @@ export const CalculatorPage: React.FC = () => {
             </div>
           </div>
 
-          {/* CENTERPIECE: FLO DAILY DIAL */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-rose-100 text-center relative overflow-hidden">
+          {/* CENTERPIECE: LUNA DAILY DIAL */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-100 text-center relative overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-semibold px-3 py-1 rounded-full bg-rose-100 text-rose-800 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-rose-500"></span>
@@ -752,7 +764,7 @@ export const CalculatorPage: React.FC = () => {
               </span>
             </div>
 
-            {/* Flo Cycle Ring */}
+            {/* Luna Cycle Ring */}
             <div className="relative w-64 h-64 sm:w-72 sm:h-72 mx-auto my-2 flex items-center justify-center">
               <svg className="w-full h-full" viewBox="0 0 240 240">
                 <circle cx="120" cy="120" r="98" fill="none" stroke="#fdecf0" strokeWidth="16" />
@@ -762,14 +774,14 @@ export const CalculatorPage: React.FC = () => {
                   cy="120"
                   r="98"
                   fill="none"
-                  stroke="url(#floCalcGradient)"
+                  stroke="url(#lunaCalcGradient)"
                   strokeWidth="16"
                   strokeLinecap="round"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeOffset}
                 />
                 <defs>
-                  <linearGradient id="floCalcGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient id="lunaCalcGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#db3264" />
                     <stop offset="50%" stopColor="#ef5582" />
                     <stop offset="100%" stopColor="#f59e0b" />
@@ -955,7 +967,7 @@ export const CalculatorPage: React.FC = () => {
           </div>
 
           {/* 3-MONTH CALENDAR VIEW */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-flo-card border border-rose-100">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-rose-100">
               <div>
                 <div className="flex items-center gap-2">
@@ -1078,7 +1090,7 @@ export const CalculatorPage: React.FC = () => {
 
           {/* SELECTED DAY CLINICAL DETAIL */}
           {selectedDayEval && (
-            <div className="bg-gradient-to-br from-white to-rose-50/50 rounded-3xl p-6 sm:p-8 shadow-flo-card border border-rose-200">
+            <div className="bg-gradient-to-br from-white to-rose-50/50 rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-rose-100">
                 <div>
                   <span className="text-xs font-bold text-rose-700 uppercase tracking-wider">
