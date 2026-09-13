@@ -7,7 +7,6 @@ export const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const { signUp, loginAsDemo, isConfigured } = useAuth();
@@ -16,7 +15,6 @@ export const RegisterPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
-    setSuccessMsg(null);
 
     if (!email || !password) {
       setErrorMsg('Harap lengkapi semua kolom.');
@@ -38,12 +36,8 @@ export const RegisterPage: React.FC = () => {
       const { error, data } = await signUp(email, password);
       if (error) {
         setErrorMsg(error.message || 'Gagal mendaftarkan akun. Silakan coba lagi.');
-      } else {
-        if (data?.user && !data.session) {
-          setSuccessMsg('Pendaftaran berhasil! Silakan periksa kotak masuk email Anda untuk melakukan konfirmasi akun.');
-        } else {
-          navigate('/dashboard', { replace: true });
-        }
+      } else if (data?.user) {
+        navigate('/dashboard', { replace: true });
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Terjadi kesalahan sistem saat mendaftar.');
@@ -96,7 +90,7 @@ export const RegisterPage: React.FC = () => {
                 <div>
                   <strong className="block font-semibold">Mode Uji Coba Tersedia</strong>
                   <span>
-                    Konfigurasi <code className="bg-amber-100 px-1 py-0.5 rounded">VITE_SUPABASE_URL</code> belum diatur ke proyek nyata. Anda dapat langsung menggunakan tombol <strong>Masuk sebagai Akun Demo</strong> di bawah.
+                    Anda dapat langsung menggunakan tombol <strong>Masuk sebagai Akun Demo</strong> di bawah untuk mencoba aplikasi.
                   </span>
                 </div>
               </div>
@@ -110,12 +104,6 @@ export const RegisterPage: React.FC = () => {
             </div>
           )}
 
-          {successMsg && (
-            <div className="mb-5 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2.5">
-              <span className="text-base">✓</span>
-              <span>{successMsg}</span>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

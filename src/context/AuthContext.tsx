@@ -1,21 +1,27 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { User, Session, AuthError } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { authApi, type User } from '../lib/api';
+
+export interface AuthSession {
+  token: string;
+  user: User;
+}
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
+  token: string | null;
+  session: AuthSession | null;
   loading: boolean;
   isConfigured: boolean;
   isDemoUser: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | Error | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: AuthError | Error | null; data: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: Error | null; data?: { user: User } }>;
   signOut: () => Promise<void>;
   loginAsDemo: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const TOKEN_KEY = 'luna_auth_token';
 const DEMO_USER_KEY = 'luna_demo_user';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -30,104 +36,128 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     return null;
   });
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState<boolean>(() => {
-    if (localStorage.getItem(DEMO_USER_KEY)) return false;
-    return isSupabaseConfigured;
+
+  const [token, setToken] = useState<string | null>(() => {
+    return localStorage.getItem(TOKEN_KEY);
   });
+
+  const [loading, setLoading] = useState<boolean>(true);
   const [isDemoUser, setIsDemoUser] = useState<boolean>(() => {
     return Boolean(localStorage.getItem(DEMO_USER_KEY));
   });
 
+  // Check auth session on startup
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      return;
-    }
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!localStorage.getItem(DEMO_USER_KEY)) {
-        setSession(session);
-        setUser(session?.user ?? null);
+    const initAuth = async () => {
+      // If demo user is active, don't query remote backend
+      const savedDemo = localStorage.getItem(DEMO_USER_KEY);
+      if (savedDemo) {
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-    }).catch(() => {
-      setLoading(false);
-    });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        setIsDemoUser(false);
-        localStorage.removeItem(DEMO_USER_KEY);
+      const storedToken = localStorage.getItem(TOKEN_KEY);
+      if (!storedToken) {
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-    });
 
-    return () => {
-      subscription.unsubscribe();
+      try {
+        const response = await authApi.getMe(storedToken);
+        if (response?.user) {
+          setUser(response.user);
+          setToken(storedToken);
+          setIsDemoUser(false);
+        } else {
+          localStorage.removeItem(TOKEN_KEY);
+          setUser(null);
+          setToken(null);
+        }
+      } catch (err) {
+        console.warn('Session verification failed, logging out:', err);
+        localStorage.removeItem(TOKEN_KEY);
+        setUser(null);
+        setToken(null);
+      } finally {
+        setLoading(false);
+      }
     };
+
+    initAuth();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    if (!isSupabaseConfigured) {
-      return {
-        error: new Error('Supabase belum dikonfigurasi. Silakan tambahkan VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY di file .env atau gunakan akun Demo.')
-      };
+  const signIn = async (email: string, password: string): Promise<{ error: Error | null }> => {
+    try {
+      const response = await authApi.login(email, password);
+      if (response.token && response.user) {
+        localStorage.setItem(TOKEN_KEY, response.token);
+        localStorage.removeItem(DEMO_USER_KEY);
+        setToken(response.token);
+        setUser(response.user);
+        setIsDemoUser(false);
+        return { error: null };
+      }
+      return { error: new Error('Respon login tidak memiliki token atau user.') };
+    } catch (err: any) {
+      return { error: err instanceof Error ? err : new Error(String(err)) };
     }
-    const result = await supabase.auth.signInWithPassword({ email, password });
-    return { error: result.error };
   };
 
-  const signUp = async (email: string, password: string) => {
-    if (!isSupabaseConfigured) {
-      return {
-        error: new Error('Supabase belum dikonfigurasi. Silakan atur VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY di .env atau gunakan akun Demo.'),
-        data: null
-      };
+  const signUp = async (
+    email: string,
+    password: string
+  ): Promise<{ error: Error | null; data?: { user: User } }> => {
+    try {
+      const response = await authApi.register(email, password);
+      if (response.token && response.user) {
+        localStorage.setItem(TOKEN_KEY, response.token);
+        localStorage.removeItem(DEMO_USER_KEY);
+        setToken(response.token);
+        setUser(response.user);
+        setIsDemoUser(false);
+        return { error: null, data: { user: response.user } };
+      }
+      return { error: new Error('Respon registrasi tidak lengkap.') };
+    } catch (err: any) {
+      return { error: err instanceof Error ? err : new Error(String(err)) };
     }
-    const result = await supabase.auth.signUp({ email, password });
-    return { error: result.error, data: result.data };
   };
 
   const signOut = async () => {
-    if (isDemoUser) {
-      localStorage.removeItem(DEMO_USER_KEY);
-      setIsDemoUser(false);
-      setUser(null);
-      setSession(null);
-      return;
-    }
-    if (isSupabaseConfigured) {
-      await supabase.auth.signOut();
-    }
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(DEMO_USER_KEY);
     setUser(null);
-    setSession(null);
+    setToken(null);
+    setIsDemoUser(false);
   };
 
   const loginAsDemo = () => {
-    const demoUser = {
+    const demoUser: User = {
       id: 'demo-user-12345',
-      app_metadata: {},
-      user_metadata: { name: 'Pengguna Demo' },
-      aud: 'authenticated',
-      created_at: new Date().toISOString(),
       email: 'demo@luna-cycle.app',
-    } as unknown as User;
+      created_at: new Date().toISOString(),
+      user_metadata: { name: 'Pengguna Demo' },
+    };
 
+    localStorage.removeItem(TOKEN_KEY);
     localStorage.setItem(DEMO_USER_KEY, JSON.stringify(demoUser));
     setUser(demoUser);
+    setToken('demo-token-mock');
     setIsDemoUser(true);
     setLoading(false);
   };
+
+  const session: AuthSession | null =
+    user && token ? { token, user } : null;
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        token,
         session,
         loading,
-        isConfigured: isSupabaseConfigured,
+        isConfigured: true,
         isDemoUser,
         signIn,
         signUp,

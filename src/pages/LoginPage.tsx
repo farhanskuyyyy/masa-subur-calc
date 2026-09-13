@@ -82,7 +82,7 @@ export const LoginPage: React.FC = () => {
                 <div>
                   <strong className="block font-semibold">Mode Uji Coba Tersedia</strong>
                   <span>
-                    Variabel lingkungan <code className="bg-amber-100 px-1 py-0.5 rounded">VITE_SUPABASE_URL</code> belum dihubungkan ke proyek nyata. Anda dapat menggunakan tombol <strong>Masuk sebagai Akun Demo</strong> di bawah untuk langsung mencoba aplikasi.
+                    Anda dapat menggunakan tombol <strong>Masuk sebagai Akun Demo</strong> di bawah untuk langsung mencoba aplikasi.
                   </span>
                 </div>
               </div>

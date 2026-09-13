@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+*.tsbuildinfo
 
 # Environment variables
 .env
@@ -27,3 +28,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# SQLite Database
+*.sqlite
+*.sqlite3
+*.db
+data/*.sqlite
+data/*.sqlite-journal
+data/*.db
+data/*.db-journal
+
