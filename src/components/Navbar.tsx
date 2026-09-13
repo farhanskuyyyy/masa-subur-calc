@@ -202,23 +202,25 @@ export const Navbar: React.FC = () => {
               onClick={() => setIsMenuOpen((prev) => !prev)}
               aria-label={isMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
               aria-expanded={isMenuOpen}
-              className="w-10 h-10 flex flex-col justify-center items-center rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer"
+              className="w-10 h-10 flex justify-center items-center rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer group"
             >
-              <span
-                className={`block h-0.5 w-5 bg-rose-700 rounded-full transition-all duration-300 ease-in-out origin-center ${
-                  isMenuOpen ? 'rotate-45 translate-y-2' : ''
-                }`}
-              />
-              <span
-                className={`block h-0.5 w-5 bg-rose-700 rounded-full my-1.5 transition-all duration-200 ease-in-out ${
-                  isMenuOpen ? 'opacity-0 scale-x-0' : 'opacity-100'
-                }`}
-              />
-              <span
-                className={`block h-0.5 w-5 bg-rose-700 rounded-full transition-all duration-300 ease-in-out origin-center ${
-                  isMenuOpen ? '-rotate-45 -translate-y-2' : ''
-                }`}
-              />
+              {isMenuOpen ? (
+                <img
+                  src="/hamburger-close.svg"
+                  alt="Tutup menu"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 transition-opacity duration-200 group-hover:opacity-70 hover:opacity-70"
+                />
+              ) : (
+                <img
+                  src="/hamburger.svg"
+                  alt="Buka menu"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 transition-opacity duration-200 group-hover:opacity-70 hover:opacity-70"
+                />
+              )}
             </button>
           </div>
         </div>

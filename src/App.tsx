@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { PwaToast } from './components/PwaToast';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -50,6 +51,7 @@ export const App: React.FC = () => {
             </Routes>
           </div>
           <Footer />
+          <PwaToast />
         </div>
       </AuthProvider>
     </BrowserRouter>
