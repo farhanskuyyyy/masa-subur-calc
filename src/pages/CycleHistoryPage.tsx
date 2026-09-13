@@ -156,10 +156,10 @@ export const CycleHistoryPage: React.FC = () => {
 
         <div className="flex items-center gap-2.5">
           <Link
-            to="/dashboard"
+            to="/calculator"
             className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold shadow-md shadow-rose-200 transition-all flex items-center gap-1.5"
           >
-            <span>✨ Hitung di Dashboard</span>
+            <span>✨ Hitung Siklus Baru</span>
           </Link>
         </div>
       </section>
@@ -209,12 +209,12 @@ export const CycleHistoryPage: React.FC = () => {
             Belum Ada Siklus Tersimpan
           </h3>
           <p className="text-xs sm:text-sm text-ink-secondary mt-2 leading-relaxed">
-            Anda belum menyimpan data siklus haid. Masuk ke Dashboard untuk menghitung masa subur lalu klik{' '}
+            Anda belum menyimpan data siklus haid. Masuk ke kalkulator untuk menghitung masa subur lalu klik{' '}
             <strong className="text-rose-700 font-semibold">'Simpan Siklus'</strong> untuk mencatat riwayat pertama Anda.
           </p>
           <div className="mt-6">
             <Link
-              to="/dashboard"
+              to="/calculator"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold shadow-md shadow-rose-200 hover:scale-105 transition-all"
             >
               <span>✨ Buka Kalkulator Sekarang</span>

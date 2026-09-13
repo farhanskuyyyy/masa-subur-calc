@@ -8,6 +8,7 @@ import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { CalculatorPage } from './pages/CalculatorPage';
 import { CycleHistoryPage } from './pages/CycleHistoryPage';
 
 export const App: React.FC = () => {
@@ -26,6 +27,14 @@ export const App: React.FC = () => {
                 element={
                   <ProtectedRoute>
                     <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/calculator"
+                element={
+                  <ProtectedRoute>
+                    <CalculatorPage />
                   </ProtectedRoute>
                 }
               />

@@ -24,7 +24,7 @@ export const Navbar: React.FC = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="2"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
@@ -74,6 +74,7 @@ export const Navbar: React.FC = () => {
                 <Link
                   to="/dashboard"
                   className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl bg-petal-500 hover:bg-petal-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-petal-200 transition-all cursor-pointer"
+                  title="Kalkulator & Kalender Dashboard"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="3" width="7" height="7"></rect>
@@ -81,7 +82,17 @@ export const Navbar: React.FC = () => {
                     <rect x="14" y="14" width="7" height="7"></rect>
                     <rect x="3" y="14" width="7" height="7"></rect>
                   </svg>
-                  <span>Dashboard</span>
+                  <span className="hidden sm:inline">Kalkulator & Kalender</span>
+                  <span className="sm:hidden">Dashboard</span>
+                </Link>
+
+                <Link
+                  to="/calculator"
+                  className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border border-petal-200 bg-white hover:bg-petal-50 text-petal-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                  title="Hitung Masa Subur & Siklus Baru"
+                >
+                  <span className="text-xs">✨</span>
+                  <span>Hitung Siklus</span>
                 </Link>
 
                 <Link
@@ -92,10 +103,11 @@ export const Navbar: React.FC = () => {
                   <svg className="w-4 h-4 text-petal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span className="hidden xs:inline">Riwayat Siklus</span>
+                  <span className="hidden sm:inline">Riwayat Siklus</span>
+                  <span className="sm:hidden">Riwayat</span>
                 </Link>
 
-                <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-petal-50 border border-petal-100 text-xs text-petal-900 font-medium">
+                <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-petal-50 border border-petal-100 text-xs text-petal-900 font-medium">
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                   <span className="max-w-[130px] truncate">{user.email}</span>
                   {isDemoUser && (
