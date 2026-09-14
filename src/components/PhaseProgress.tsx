@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { UserCycle, UserCyclePhase } from '../lib/api';
 
 interface PhaseProgressProps {
@@ -12,6 +13,8 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
   todayDateStr,
   compact = false,
 }) => {
+  const { t } = useTranslation();
+
   // Parse base cycle dates
   const todayStr = todayDateStr || (() => {
     const d = new Date();
@@ -72,45 +75,45 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
     switch (phaseType) {
       case 'menstrual':
         return {
-          label: 'Fase Menstruasi',
+          label: t('phases.menstrual'),
           color: 'bg-rose-100 text-rose-800 border-rose-200',
           icon: '🩸',
         };
       case 'follicular':
         return {
-          label: 'Fase Folikular',
+          label: t('phases.follicular'),
           color: 'bg-pink-100 text-pink-800 border-pink-200',
           icon: '🌱',
         };
       case 'ovulatory':
         return {
-          label: 'Fase Ovulasi (Subur Puncak)',
+          label: t('phases.ovulatory'),
           color: 'bg-amber-100 text-amber-900 border-amber-300 font-bold',
           icon: '🥚',
         };
       case 'luteal':
         return {
-          label: 'Fase Luteal',
+          label: t('phases.luteal'),
           color: 'bg-purple-100 text-purple-800 border-purple-200',
           icon: '🌙',
         };
       default:
         if (isLate) {
           return {
-            label: `Terlambat ${daysLate} Hari`,
+            label: t('phases.late', { count: daysLate }),
             color: 'bg-amber-100 text-amber-900 border-amber-300',
             icon: '⏱️',
           };
         }
         if (isBeforeStart) {
           return {
-            label: 'Belum Dimulai',
+            label: t('phases.notStarted'),
             color: 'bg-gray-100 text-gray-700 border-gray-200',
             icon: '🗓️',
           };
         }
         return {
-          label: 'Dalam Siklus',
+          label: t('phases.inCycle'),
           color: 'bg-rose-100 text-rose-800 border-rose-200',
           icon: '🌸',
         };
@@ -124,41 +127,41 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
       {/* Header Info */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-3 border-b border-rose-50">
         <div className="flex items-center gap-2.5">
-          <span className="text-xl sm:text-2xl">{badge.icon}</span>
+          <span className="text-xl sm:text-2xl" aria-hidden="true">{badge.icon}</span>
           <div>
             <div className="flex items-center gap-2">
               <span className={`text-xs px-2.5 py-0.5 rounded-full border font-semibold ${badge.color}`}>
                 {badge.label}
               </span>
               <span className="text-xs font-bold text-ink-primary">
-                Hari ke-{Math.max(1, Math.min(cycleDay, totalLength))}
+                {t('dashboard.day')} {Math.max(1, Math.min(cycleDay, totalLength))}
               </span>
               <span className="text-xs text-ink-muted hidden sm:inline">
-                dari {cycle.cycle_length} hari
+                {t('dashboard.of')} {cycle.cycle_length} {t('dashboard.days')}
               </span>
             </div>
             <p className="text-[11px] text-ink-muted mt-0.5">
-              HPHT: <strong>{cycle.cycle_start_date}</strong>
+              {t('dashboard.hpht')}: <strong>{cycle.cycle_start_date}</strong>
               {cycle.ovulation_date && (
-                <> • Ovulasi: <strong className="text-amber-700">{cycle.ovulation_date}</strong></>
+                <> • {t('dashboard.ovulation')}: <strong className="text-amber-700">{cycle.ovulation_date}</strong></>
               )}
             </p>
           </div>
         </div>
 
         <div className="text-right flex sm:flex-col items-center sm:items-end justify-between sm:justify-center">
-          <span className="text-[11px] text-ink-muted">Status Estimasi:</span>
+          <span className="text-[11px] text-ink-muted">{t('dashboard.todayStatus')}:</span>
           {isLate ? (
             <span className="text-xs font-bold text-rose-700">
-              Terlambat {daysLate} hari
+              {t('dashboard.late', { count: daysLate })}
             </span>
           ) : daysRemaining <= 0 ? (
             <span className="text-xs font-bold text-rose-600">
-              Hari perkiraan haid
+              {t('dashboard.periodToday')}
             </span>
           ) : (
             <span className="text-xs font-bold text-rose-700">
-              {daysRemaining} hari lagi menuju haid
+              {t('dashboard.daysRemaining', { count: daysRemaining })}
             </span>
           )}
         </div>
@@ -173,9 +176,9 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
             style={{ left: `${Math.min(94, Math.max(6, currentPct))}%` }}
           >
             <span className="px-2 py-0.5 rounded-md bg-ink-primary text-white text-[10px] font-bold shadow-md whitespace-nowrap">
-              Hari ke-{cycleDay}
+              {t('dashboard.day')} {cycleDay}
             </span>
-            <div className="w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-ink-primary"></div>
+            <div className="w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-ink-primary" aria-hidden="true"></div>
           </div>
         )}
 
@@ -185,10 +188,10 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
           <div
             style={{ width: `${pctMenstrual}%` }}
             className="h-full bg-rose-400 hover:bg-rose-500 rounded-l-full relative group transition-colors cursor-pointer"
-            title={`Menstruasi: ${menstrualPhase?.phase_start} s/d ${menstrualPhase?.phase_end}`}
+            title={`${t('phases.menstrual')}: ${menstrualPhase?.phase_start} s/d ${menstrualPhase?.phase_end}`}
           >
             <div className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white uppercase tracking-wider overflow-hidden">
-              {menstrualDur >= 4 && <span className="truncate px-1">Haid</span>}
+              {menstrualDur >= 4 && <span className="truncate px-1">{t('phases.period')}</span>}
             </div>
           </div>
 
@@ -196,10 +199,10 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
           <div
             style={{ width: `${pctFollicular}%` }}
             className="h-full bg-pink-200 hover:bg-pink-300 relative group transition-colors cursor-pointer"
-            title={`Folikular: ${follicularPhase?.phase_start} s/d ${follicularPhase?.phase_end}`}
+            title={`${t('phases.follicular')}: ${follicularPhase?.phase_start} s/d ${follicularPhase?.phase_end}`}
           >
             <div className="absolute inset-0 flex items-center justify-center text-[9px] font-semibold text-rose-900 overflow-hidden">
-              {follicularDur >= 5 && <span className="truncate px-1">Folikular</span>}
+              {follicularDur >= 5 && <span className="truncate px-1">{t('phases.follicular')}</span>}
             </div>
           </div>
 
@@ -207,19 +210,19 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
           <div
             style={{ width: `${pctOvulatory}%` }}
             className="h-full bg-amber-400 hover:bg-amber-500 ring-2 ring-amber-300 ring-offset-0 relative group transition-colors cursor-pointer z-0 flex items-center justify-center"
-            title={`Ovulasi: ${ovulatoryPhase?.phase_start}`}
+            title={`${t('phases.ovulatory')}: ${ovulatoryPhase?.phase_start}`}
           >
-            <span className="text-[10px] text-white font-bold leading-none">★</span>
+            <span className="text-[10px] text-white font-bold leading-none" aria-hidden="true">★</span>
           </div>
 
           {/* 4. Luteal */}
           <div
             style={{ width: `${pctLuteal}%` }}
             className="h-full bg-purple-200 hover:bg-purple-300 rounded-r-full relative group transition-colors cursor-pointer"
-            title={`Luteal: ${lutealPhase?.phase_start} s/d ${lutealPhase?.phase_end}`}
+            title={`${t('phases.luteal')}: ${lutealPhase?.phase_start} s/d ${lutealPhase?.phase_end}`}
           >
             <div className="absolute inset-0 flex items-center justify-center text-[9px] font-semibold text-purple-900 overflow-hidden">
-              {lutealDur >= 6 && <span className="truncate px-1">Luteal</span>}
+              {lutealDur >= 6 && <span className="truncate px-1">{t('phases.luteal')}</span>}
             </div>
           </div>
         </div>
@@ -229,9 +232,11 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
       {!compact && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 text-[11px] text-ink-secondary border-t border-rose-50 mt-1">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-400 flex-shrink-0"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-400 flex-shrink-0" aria-hidden="true"></span>
             <div className="truncate">
-              <span className="font-semibold text-ink-primary block truncate">Haid ({menstrualDur}h)</span>
+              <span className="font-semibold text-ink-primary block truncate">
+                {t('phases.period')} ({menstrualDur}h)
+              </span>
               <span className="text-ink-muted text-[10px]">
                 {formatShortDate(menstrualPhase?.phase_start || '')}–{formatShortDate(menstrualPhase?.phase_end || '')}
               </span>
@@ -239,9 +244,11 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-pink-300 flex-shrink-0"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-pink-300 flex-shrink-0" aria-hidden="true"></span>
             <div className="truncate">
-              <span className="font-semibold text-ink-primary block truncate">Folikular ({follicularDur}h)</span>
+              <span className="font-semibold text-ink-primary block truncate">
+                {t('phases.follicular')} ({follicularDur}h)
+              </span>
               <span className="text-ink-muted text-[10px]">
                 {formatShortDate(follicularPhase?.phase_start || '')}–{formatShortDate(follicularPhase?.phase_end || '')}
               </span>
@@ -249,9 +256,11 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0" aria-hidden="true"></span>
             <div className="truncate">
-              <span className="font-semibold text-amber-900 block truncate">Ovulasi (Hari {ovulDayOffset})</span>
+              <span className="font-semibold text-amber-900 block truncate">
+                {t('phases.ovulation')} ({t('dashboard.day')} {ovulDayOffset})
+              </span>
               <span className="text-ink-muted text-[10px]">
                 {formatShortDate(ovulatoryPhase?.phase_start || '')}
               </span>
@@ -259,9 +268,11 @@ export const PhaseProgress: React.FC<PhaseProgressProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-purple-300 flex-shrink-0"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-purple-300 flex-shrink-0" aria-hidden="true"></span>
             <div className="truncate">
-              <span className="font-semibold text-ink-primary block truncate">Luteal ({lutealDur}h)</span>
+              <span className="font-semibold text-ink-primary block truncate">
+                {t('phases.luteal')} ({lutealDur}h)
+              </span>
               <span className="text-ink-muted text-[10px]">
                 {formatShortDate(lutealPhase?.phase_start || '')}–{formatShortDate(lutealPhase?.phase_end || '')}
               </span>

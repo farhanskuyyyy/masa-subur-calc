@@ -1,25 +1,27 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export const Footer: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
 
   const footerLinks = [
-    { href: '/', label: 'Beranda' },
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/login', label: 'Masuk' },
-    { href: '/register', label: 'Daftar Akun' },
+    { href: '/', label: t('footer.home') },
+    { href: '/dashboard', label: t('footer.dashboard') },
+    { href: '/login', label: t('footer.login') },
+    { href: '/register', label: t('footer.register') },
   ];
 
   return (
-    <footer className="mt-16 border-t border-rose-100 bg-white/60 py-8 px-4 sm:px-6 text-center text-xs text-ink-muted">
+    <footer aria-label="Footer" className="mt-16 border-t border-rose-100 bg-white/60 py-8 px-4 sm:px-6 text-center text-xs text-ink-muted">
       <div className="max-w-4xl mx-auto space-y-3">
-        <div className="flex flex-wrap items-center justify-center gap-4 text-xs">
+        <nav aria-label="Footer Navigation" className="flex flex-wrap items-center justify-center gap-4 text-xs">
           {footerLinks.map((link, idx) => {
             const isActive = location.pathname === link.href;
             return (
               <React.Fragment key={link.href}>
-                {idx > 0 && <span className="text-gray-300">•</span>}
+                {idx > 0 && <span className="text-gray-300" aria-hidden="true">•</span>}
                 <Link
                   to={link.href}
                   className={`transition-colors border-b-2 pb-0.5 ${
@@ -33,14 +35,16 @@ export const Footer: React.FC = () => {
               </React.Fragment>
             );
           })}
-        </div>
+        </nav>
         <p className="leading-relaxed max-w-xl mx-auto">
-          Luna dirancang dengan metodologi kalendar medis (Ogino-Knaus & Konsensus Wilcox). Seluruh perhitungan fertilitas dijalankan secara aman di browser Anda.
+          {t('footer.description')}
         </p>
         <p className="text-[11px] text-ink-muted/80">
-          © {new Date().getFullYear()} Luna Menstrual Calculator.
+          {t('footer.copyright', { year: new Date().getFullYear() })}
         </p>
       </div>
     </footer>
   );
 };
+
+export default Footer;

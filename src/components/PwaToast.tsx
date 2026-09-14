@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -34,6 +35,7 @@ function isSafari(): boolean {
 }
 
 export const PwaToast: React.FC = () => {
+  const { t } = useTranslation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isIOSDevice, setIsIOSDevice] = useState(false);
@@ -107,50 +109,51 @@ export const PwaToast: React.FC = () => {
   // iOS version — show Safari instructions
   if (isIOSDevice) {
     return (
-      <aside aria-label="Notifikasi Instal Aplikasi" className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-md z-50">
+      <aside aria-label={t('pwa.notificationLabel')} className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-md z-50">
         <div className="bg-white/95 backdrop-blur-md border border-rose-200/90 shadow-xl shadow-rose-900/10 rounded-2xl p-4">
           <div className="flex items-start gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-white shrink-0 shadow-sm shadow-rose-300">
-              <img src="/logo-luna.svg" alt="L" className="w-6 h-6 object-contain" />
+              <img src="/logo-luna.svg" alt="Luna Logo" width={24} height={24} className="w-6 h-6 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-sm font-bold text-gray-900 leading-snug">
-                📱 Pasang Luna di iPhone
+                {t('pwa.ios_title')}
               </h2>
               <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-                Ketuk tombol <strong>Bagikan ↗</strong> di bawah, lalu pilih
-                <strong> "Tambah ke Layar Utama"</strong> untuk memasang Luna sebagai aplikasi.
+                {t('pwa.ios_instructions')}
               </p>
               <div className="mt-2 bg-rose-50 rounded-xl px-3 py-2 text-xs text-rose-700">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">👆</span>
-                  <span>Bagikan ↗ → Tambah ke Layar Utama</span>
+                  <span className="text-base" aria-hidden="true">👆</span>
+                  <span>{t('pwa.ios_instructions')}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2.5 mt-3">
                 <button
                   type="button"
                   onClick={handleDismiss}
-                  className="px-4 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-sm"
+                  aria-label={t('pwa.understand')}
+                  className="px-4 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-sm cursor-pointer"
                 >
-                  Mengerti
+                  {t('pwa.understand')}
                 </button>
                 <button
                   type="button"
                   onClick={handleDismiss}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-medium text-gray-600 hover:text-rose-700 bg-rose-50/70 hover:bg-rose-100/70 border border-rose-200/70 transition-colors"
+                  aria-label={t('pwa.dismiss')}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-medium text-gray-600 hover:text-rose-700 bg-rose-50/70 hover:bg-rose-100/70 border border-rose-200/70 transition-colors cursor-pointer"
                 >
-                  Nanti Saja
+                  {t('pwa.dismiss')}
                 </button>
               </div>
             </div>
             <button
               type="button"
               onClick={handleDismiss}
-              aria-label="Tutup"
-              className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-rose-50 transition-colors shrink-0 -mr-1 -mt-1"
+              aria-label={t('pwa.closeNotification')}
+              className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-rose-50 transition-colors shrink-0 -mr-1 -mt-1 cursor-pointer"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -163,43 +166,45 @@ export const PwaToast: React.FC = () => {
 
   // Android/Chrome version — direct install
   return (
-    <aside aria-label="Notifikasi Instal Aplikasi" className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-md z-50">
+    <aside aria-label={t('pwa.notificationLabel')} className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-md z-50">
       <div className="bg-white/95 backdrop-blur-md border border-rose-200/90 shadow-xl shadow-rose-900/10 rounded-2xl p-4">
         <div className="flex items-start gap-3.5">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-white shrink-0 shadow-sm shadow-rose-300">
-            <img src="/logo-luna.svg" alt="L" className="w-6 h-6 object-contain" />
+            <img src="/logo-luna.svg" alt="Luna Logo" width={24} height={24} className="w-6 h-6 object-contain" />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-bold text-gray-900 leading-snug">
-              📱 Instal Luna sebagai aplikasi
+              {t('pwa.title')}
             </h2>
             <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">
-              Pasang untuk akses cepat siklus subur & menstruasi langsung dari layar beranda Anda.
+              {t('pwa.subtitle')}
             </p>
             <div className="flex items-center gap-2.5 mt-3">
               <button
                 type="button"
                 onClick={handleInstall}
+                aria-label={t('pwa.install')}
                 className="px-4 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-sm shadow-rose-300/50 hover:shadow transition-all cursor-pointer active:scale-95"
               >
-                Pasang
+                {t('pwa.install')}
               </button>
               <button
                 type="button"
                 onClick={handleDismiss}
+                aria-label={t('pwa.dismiss')}
                 className="px-3.5 py-1.5 rounded-xl text-xs font-medium text-gray-600 hover:text-rose-700 bg-rose-50/70 hover:bg-rose-100/70 border border-rose-200/70 transition-colors cursor-pointer"
               >
-                Nanti Saja
+                {t('pwa.dismiss')}
               </button>
             </div>
           </div>
           <button
             type="button"
             onClick={handleDismiss}
-            aria-label="Tutup notifikasi"
+            aria-label={t('pwa.closeNotification')}
             className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer shrink-0 -mr-1 -mt-1"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -209,3 +214,5 @@ export const PwaToast: React.FC = () => {
     </aside>
   );
 };
+
+export default PwaToast;

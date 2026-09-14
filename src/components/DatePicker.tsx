@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface DatePickerProps {
   value: string; // Format: YYYY-MM-DD
@@ -14,7 +15,7 @@ export interface DatePickerProps {
   className?: string;
 }
 
-const MONTH_NAMES = [
+const MONTH_NAMES_ID = [
   'Januari',
   'Februari',
   'Maret',
@@ -29,14 +30,30 @@ const MONTH_NAMES = [
   'Desember',
 ];
 
-const DAY_NAMES = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+const MONTH_NAMES_EN = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+const DAY_NAMES_ID = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+const DAY_NAMES_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export const DatePicker: React.FC<DatePickerProps> = ({
   value,
   onChange,
   label,
   id,
-  placeholder = 'Pilih tanggal...',
+  placeholder,
   required = false,
   disabled = false,
   minDate,
@@ -44,6 +61,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   menstruationDays = [],
   className = '',
 }) => {
+  const { i18n } = useTranslation();
+  const isEn = (i18n.language || 'en').startsWith('en');
+  const monthNames = isEn ? MONTH_NAMES_EN : MONTH_NAMES_ID;
+  const dayNames = isEn ? DAY_NAMES_EN : DAY_NAMES_ID;
+
+  const defaultPlaceholder = isEn ? 'Select date...' : 'Pilih tanggal...';
+  const effectivePlaceholder = placeholder || defaultPlaceholder;
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -137,7 +162,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const formattedDisplay = value
     ? (() => {
         const d = parseSafe(value);
-        return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+        return `${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
       })()
     : '';
 
@@ -149,17 +174,17 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           className="block text-sm font-semibold text-ink-primary mb-2 flex items-center justify-between"
         >
           <span className="flex items-center gap-2">
-            <span className="text-rose-500">📅</span> {label}
+            <span className="text-rose-500" aria-hidden="true">📅</span> {label}
           </span>
           {required && (
             <span className="text-xs font-normal text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">
-              Wajib
+              {isEn ? 'Required' : 'Wajib'}
             </span>
           )}
         </label>
       )}
 
-      {/* Trigger Button (custom styled, white background, rounded-2xl, shadow, rose theme) */}
+      {/* Trigger Button */}
       <button
         type="button"
         id={id}
@@ -175,7 +200,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       >
         <div className="flex items-center gap-3 truncate">
           <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
               <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -193,7 +218,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             </div>
           ) : (
             <span className="text-sm sm:text-base text-ink-muted font-normal">
-              {placeholder}
+              {effectivePlaceholder}
             </span>
           )}
         </div>
@@ -205,13 +230,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
+            aria-hidden="true"
           >
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
         </div>
       </button>
 
-      {/* Custom Calendar Grid Popover (white background, rounded-2xl, shadow, rose theme) */}
+      {/* Custom Calendar Grid Popover */}
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 z-50 w-full sm:w-80 bg-white rounded-2xl p-4 sm:p-5 shadow-2xl border border-rose-200 animate-in fade-in zoom-in-95 duration-150">
           {/* Calendar Header with Navigation */}
@@ -219,35 +245,35 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             <button
               type="button"
               onClick={handlePrevMonth}
-              aria-label="Bulan Sebelumnya"
+              aria-label={isEn ? 'Previous month' : 'Bulan Sebelumnya'}
               className="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <polyline points="15 18 9 12 15 6"></polyline>
               </svg>
             </button>
 
             <div className="text-center">
               <span className="font-display font-bold text-sm sm:text-base text-rose-950">
-                {MONTH_NAMES[viewMonth]} {viewYear}
+                {monthNames[viewMonth]} {viewYear}
               </span>
             </div>
 
             <button
               type="button"
               onClick={handleNextMonth}
-              aria-label="Bulan Berikutnya"
+              aria-label={isEn ? 'Next month' : 'Bulan Berikutnya'}
               className="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </button>
           </div>
 
-          {/* Weekday headers: Min, Sen, Sel, Rab, Kam, Jum, Sab */}
+          {/* Weekday headers */}
           <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-ink-muted mb-2">
-            {DAY_NAMES.map((name, idx) => (
+            {dayNames.map((name, idx) => (
               <div key={name} className={idx === 0 ? 'text-rose-500' : 'text-gray-500'}>
                 {name}
               </div>
@@ -256,7 +282,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
           {/* Day Grid */}
           <div className="grid grid-cols-7 gap-1">
-            {/* Days from previous month */}
             {Array.from({ length: firstDayOfWeek }).map((_, i) => {
               const prevDayNum = daysInPrevMonth - firstDayOfWeek + i + 1;
               return (
@@ -269,7 +294,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               );
             })}
 
-            {/* Current month days */}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
               const dateISO = toISODate(viewYear, viewMonth, day);
@@ -308,17 +332,16 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                   disabled={isDisabled}
                   onClick={() => handleSelectDay(day)}
                   className={btnClasses}
-                  aria-label={`${day} ${MONTH_NAMES[viewMonth]} ${viewYear}`}
+                  aria-label={`${day} ${monthNames[viewMonth]} ${viewYear}`}
                 >
                   <span className="leading-none">{day}</span>
                   {isMenstruation && !isSelected && (
-                    <span className="text-[7px] leading-none mt-0.5 text-rose-500">💧</span>
+                    <span className="text-[7px] leading-none mt-0.5 text-rose-500" aria-hidden="true">💧</span>
                   )}
                 </button>
               );
             })}
 
-            {/* Trailing days from next month */}
             {Array.from({ length: remainingCells }).map((_, i) => (
               <div
                 key={`next-${i}`}
@@ -336,13 +359,13 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               onClick={handleJumpToday}
               className="text-rose-600 hover:text-rose-800 font-bold hover:underline transition-colors cursor-pointer"
             >
-              Hari Ini
+              {isEn ? 'Today' : 'Hari Ini'}
             </button>
 
             {menstruationDays.length > 0 && (
               <div className="flex items-center gap-1 text-[11px] text-ink-muted">
-                <span className="w-2 h-2 rounded-full bg-rose-400"></span>
-                <span>Fase Haid</span>
+                <span className="w-2 h-2 rounded-full bg-rose-400" aria-hidden="true"></span>
+                <span>{isEn ? 'Period' : 'Fase Haid'}</span>
               </div>
             )}
 
@@ -351,7 +374,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               onClick={() => setIsOpen(false)}
               className="text-ink-muted hover:text-ink-primary font-medium hover:underline transition-colors cursor-pointer"
             >
-              Tutup
+              {isEn ? 'Close' : 'Tutup'}
             </button>
           </div>
         </div>
@@ -359,3 +382,5 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     </div>
   );
 };
+
+export default DatePicker;

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 export const RegisterPage: React.FC = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,17 +19,17 @@ export const RegisterPage: React.FC = () => {
     setErrorMsg(null);
 
     if (!email || !password) {
-      setErrorMsg('Harap lengkapi semua kolom.');
+      setErrorMsg(t('auth.register.validationEmpty'));
       return;
     }
 
     if (password.length < 6) {
-      setErrorMsg('Kata sandi minimal harus 6 karakter.');
+      setErrorMsg(t('auth.register.validationPasswordLength'));
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMsg('Konfirmasi kata sandi tidak cocok.');
+      setErrorMsg(t('auth.register.validationPasswordMatch'));
       return;
     }
 
@@ -35,12 +37,12 @@ export const RegisterPage: React.FC = () => {
     try {
       const { error, data } = await signUp(email, password);
       if (error) {
-        setErrorMsg(error.message || 'Gagal mendaftarkan akun. Silakan coba lagi.');
+        setErrorMsg(error.message || 'Registration failed. Please try again.');
       } else if (data?.user) {
         navigate('/dashboard', { replace: true });
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Terjadi kesalahan sistem saat mendaftar.');
+      setErrorMsg(err.message || 'System error during registration.');
     } finally {
       setIsLoading(false);
     }
@@ -52,18 +54,18 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4 sm:px-6 py-12">
+    <main className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4 sm:px-6 py-12">
       <div className="w-full max-w-md">
         {/* Floating Brand Header */}
         <div className="text-center mb-8">
           <div className="inline-flex w-14 h-14 rounded-3xl overflow-hidden shadow-lg shadow-rose-200 mb-3">
-            <img src="/logo-luna.svg" alt="Luna" className="w-full h-full object-contain" />
+            <img src="/logo-luna.svg" alt="Luna Logo" width={56} height={56} className="w-full h-full object-contain" />
           </div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-ink-primary">
-            Daftar Akun Baru
+            {t('auth.register.title')}
           </h1>
           <p className="text-xs sm:text-sm text-ink-secondary mt-1">
-            Mulai pantau siklus kesuburan dan perkiraan ovulasi Anda
+            {t('auth.register.subtitle')}
           </p>
         </div>
 
@@ -72,29 +74,26 @@ export const RegisterPage: React.FC = () => {
           {!isConfigured && (
             <div className="mb-5 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
               <div className="flex items-start gap-2">
-                <span className="text-base">💡</span>
+                <span className="text-base" aria-hidden="true">💡</span>
                 <div>
-                  <strong className="block font-semibold">Mode Uji Coba Tersedia</strong>
-                  <span>
-                    Anda dapat langsung menggunakan tombol <strong>Masuk sebagai Akun Demo</strong> di bawah untuk mencoba aplikasi.
-                  </span>
+                  <strong className="block font-semibold">{t('auth.register.demoNoticeTitle')}</strong>
+                  <span>{t('auth.register.demoNoticeDesc')}</span>
                 </div>
               </div>
             </div>
           )}
 
           {errorMsg && (
-            <div className="mb-5 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
-              <span className="text-base">⚠️</span>
+            <div role="alert" className="mb-5 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
+              <span className="text-base" aria-hidden="true">⚠️</span>
               <span>{errorMsg}</span>
             </div>
           )}
 
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" aria-label={t('auth.register.title')}>
             <div>
               <label className="block text-xs font-semibold text-ink-primary mb-1.5" htmlFor="email">
-                Alamat Email
+                {t('auth.register.email')}
               </label>
               <input
                 id="email"
@@ -103,13 +102,14 @@ export const RegisterPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@email.com"
+                aria-required="true"
                 className="w-full px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-medium text-sm focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100 outline-none transition-all"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-ink-primary mb-1.5" htmlFor="password">
-                Kata Sandi (Min. 6 Karakter)
+                {t('auth.register.password')}
               </label>
               <input
                 id="password"
@@ -118,13 +118,14 @@ export const RegisterPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                aria-required="true"
                 className="w-full px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-medium text-sm focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100 outline-none transition-all"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-ink-primary mb-1.5" htmlFor="confirmPassword">
-                Ulangi Kata Sandi
+                {t('auth.register.confirmPassword')}
               </label>
               <input
                 id="confirmPassword"
@@ -133,6 +134,7 @@ export const RegisterPage: React.FC = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
+                aria-required="true"
                 className="w-full px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-medium text-sm focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100 outline-none transition-all"
               />
             </div>
@@ -140,15 +142,16 @@ export const RegisterPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
+              aria-label={t('auth.register.submit')}
               className="w-full py-3.5 px-6 mt-2 bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-pink-600 disabled:opacity-60 text-white font-display font-bold text-sm sm:text-base rounded-2xl shadow-lg shadow-rose-200 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               {isLoading ? (
                 <>
-                  <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
-                  <span>Mendaftarkan...</span>
+                  <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" aria-hidden="true"></div>
+                  <span>{t('auth.register.processing')}</span>
                 </>
               ) : (
-                <span>Daftar Sekarang</span>
+                <span>{t('auth.register.submit')}</span>
               )}
             </button>
           </form>
@@ -158,22 +161,22 @@ export const RegisterPage: React.FC = () => {
             <button
               type="button"
               onClick={handleDemoLogin}
+              aria-label={t('auth.register.demoButton')}
               className="w-full py-2.5 px-4 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
-              <span>🌸</span>
-              <span>Coba sebagai Akun Demo Langsung</span>
+              <span>{t('auth.register.demoButton')}</span>
             </button>
           </div>
 
           <p className="mt-6 text-center text-xs text-ink-secondary">
-            Sudah memiliki akun?{' '}
+            {t('auth.register.hasAccount')}{' '}
             <Link to="/login" className="text-rose-600 hover:text-rose-800 font-bold underline">
-              Masuk di sini
+              {t('auth.register.loginLink')}
             </Link>
           </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { cyclesApi, type UserCycle } from '../lib/api';
 import { CycleCard } from '../components/CycleCard';
@@ -7,7 +8,9 @@ import { PhaseProgress } from '../components/PhaseProgress';
 import { DatePicker } from '../components/DatePicker';
 
 export const CycleHistoryPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { token, isDemoUser } = useAuth();
+  const isEn = (i18n.language || 'en').startsWith('en');
 
   const [cycles, setCycles] = useState<UserCycle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -44,11 +47,11 @@ export const CycleHistoryPage: React.FC = () => {
       setCycles(res.cycles || []);
     } catch (err: any) {
       console.error('Error fetching cycles:', err);
-      setErrorMessage(err.message || 'Gagal memuat riwayat siklus.');
+      setErrorMessage(err.message || (isEn ? 'Failed to load cycle history.' : 'Gagal memuat riwayat siklus.'));
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, isEn]);
 
   useEffect(() => {
     fetchCycles();
@@ -80,11 +83,11 @@ export const CycleHistoryPage: React.FC = () => {
         period_duration: editPeriodDuration,
         luteal_phase_length: editLutealPhase,
       });
-      showToast('Siklus berhasil diperbarui!');
+      showToast(isEn ? 'Cycle successfully updated!' : 'Siklus berhasil diperbarui!');
       setEditingCycle(null);
       await fetchCycles();
     } catch (err: any) {
-      showToast(err.message || 'Gagal memperbarui siklus.');
+      showToast(err.message || (isEn ? 'Failed to update cycle.' : 'Gagal memperbarui siklus.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -106,11 +109,11 @@ export const CycleHistoryPage: React.FC = () => {
         cycle_start_date: resetHpht,
         cycle_length: resetCycleLength,
       });
-      showToast('Siklus berhasil direset & fase dihitung ulang!');
+      showToast(isEn ? 'Cycle reset & phases recomputed!' : 'Siklus berhasil direset & fase dihitung ulang!');
       setResettingCycle(null);
       await fetchCycles();
     } catch (err: any) {
-      showToast(err.message || 'Gagal mereset siklus.');
+      showToast(err.message || (isEn ? 'Failed to reset cycle.' : 'Gagal mereset siklus.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -122,11 +125,11 @@ export const CycleHistoryPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       await cyclesApi.delete(token, deletingId);
-      showToast('Siklus berhasil dihapus dari riwayat.');
+      showToast(isEn ? 'Cycle deleted from history.' : 'Siklus berhasil dihapus dari riwayat.');
       setDeletingId(null);
       await fetchCycles();
     } catch (err: any) {
-      showToast(err.message || 'Gagal menghapus siklus.');
+      showToast(err.message || (isEn ? 'Failed to delete cycle.' : 'Gagal menghapus siklus.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -135,45 +138,47 @@ export const CycleHistoryPage: React.FC = () => {
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       {/* Page Header */}
-      <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-rose-100">
+      <section aria-labelledby="history-heading" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-rose-100">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
-              Riwayat & Manajemen Fase
+              {t('history.title')}
             </span>
             {isDemoUser && (
               <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
-                Mode Demo
+                {t('nav.demo')}
               </span>
             )}
           </div>
-          <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink-primary mt-1.5">
-            Riwayat Siklus Menstruasi
+          <h1 id="history-heading" className="font-display text-2xl sm:text-3xl font-extrabold text-ink-primary mt-1.5">
+            {t('history.title')}
           </h1>
           <p className="text-xs sm:text-sm text-ink-secondary mt-1">
-            Simpan, sesuaikan, dan perbarui siklus personal Anda untuk prediksi fase hormon yang akurat.
+            {t('history.subtitle')}
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
           <Link
             to="/calculator"
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold shadow-md shadow-rose-200 transition-all flex items-center gap-1.5"
+            aria-label={t('history.calculateNew')}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold shadow-md shadow-rose-200 transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <span>✨ Hitung Siklus Baru</span>
+            <span aria-hidden="true">✨</span>
+            <span>{t('history.calculateNew')}</span>
           </Link>
         </div>
       </section>
 
       {/* Active Phase Card (if current cycle exists) */}
       {currentCycle && !loading && (
-        <section className="mb-8">
+        <section aria-labelledby="active-phase-heading" className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display font-bold text-base sm:text-lg text-ink-primary flex items-center gap-2">
-              <span>🌸</span>
-              <span>Progres Fase Siklus Aktif</span>
+            <h2 id="active-phase-heading" className="font-display font-bold text-base sm:text-lg text-ink-primary flex items-center gap-2">
+              <span aria-hidden="true">🌸</span>
+              <span>{t('dashboard.phaseProgress')}</span>
             </h2>
-            <span className="text-xs text-ink-muted">Berdasarkan data siklus terbaru Anda</span>
+            <span className="text-xs text-ink-muted">{isEn ? 'Based on latest active cycle' : 'Berdasarkan data siklus terbaru Anda'}</span>
           </div>
           <PhaseProgress cycle={currentCycle} />
         </section>
@@ -181,21 +186,21 @@ export const CycleHistoryPage: React.FC = () => {
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs mb-6 flex items-center justify-between">
+        <div role="alert" className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs mb-6 flex items-center justify-between">
           <span>⚠️ {errorMessage}</span>
           <button
             type="button"
             onClick={fetchCycles}
             className="px-2.5 py-1 bg-white border border-rose-200 rounded-lg text-xs font-semibold cursor-pointer"
           >
-            Coba Lagi
+            {isEn ? 'Try Again' : 'Coba Lagi'}
           </button>
         </div>
       )}
 
       {/* Loading Skeleton */}
       {loading ? (
-        <div className="space-y-4">
+        <div className="space-y-4" aria-busy="true">
           {[1, 2].map((i) => (
             <div key={i} className="h-44 rounded-3xl bg-rose-50/50 animate-pulse border border-rose-100"></div>
           ))}
@@ -203,39 +208,43 @@ export const CycleHistoryPage: React.FC = () => {
       ) : cycles.length === 0 ? (
         /* Empty State */
         <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border border-rose-100 shadow-sm max-w-lg mx-auto my-8">
-          <div className="w-16 h-16 rounded-3xl bg-rose-100 text-rose-500 flex items-center justify-center text-3xl mx-auto mb-4">
+          <div className="w-16 h-16 rounded-3xl bg-rose-100 text-rose-500 flex items-center justify-center text-3xl mx-auto mb-4" aria-hidden="true">
             📅
           </div>
-          <h3 className="font-display font-bold text-xl text-ink-primary">
-            Belum Ada Siklus Tersimpan
-          </h3>
+          <h2 className="font-display font-bold text-xl text-ink-primary">
+            {t('history.noCycles')}
+          </h2>
           <p className="text-xs sm:text-sm text-ink-secondary mt-2 leading-relaxed">
-            Anda belum menyimpan data siklus haid. Masuk ke kalkulator untuk menghitung masa subur lalu klik{' '}
-            <strong className="text-rose-700 font-semibold">'Simpan Siklus'</strong> untuk mencatat riwayat pertama Anda.
+            {isEn
+              ? 'You have not saved any menstrual cycles yet. Use the calculator to calculate your fertility window and save your first cycle.'
+              : 'Anda belum menyimpan data siklus haid. Masuk ke kalkulator untuk menghitung masa subur lalu klik "Simpan Siklus" untuk mencatat riwayat pertama Anda.'}
           </p>
           <div className="mt-6">
             <Link
               to="/calculator"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold shadow-md shadow-rose-200 hover:scale-105 transition-all"
+              aria-label={t('history.calculateNew')}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold shadow-md shadow-rose-200 hover:scale-105 transition-all cursor-pointer"
             >
-              <span>✨ Buka Kalkulator Sekarang</span>
+              <span>✨ {t('history.calculateNew')}</span>
             </Link>
           </div>
         </div>
       ) : (
         /* List of Saved Cycles */
-        <section className="space-y-6">
+        <section aria-label={t('history.title')} className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display font-bold text-base sm:text-lg text-ink-primary flex items-center gap-2">
-              <span>📋</span>
-              <span>Daftar Siklus Tersimpan ({cycles.length})</span>
+              <span aria-hidden="true">📋</span>
+              <span>{t('history.title')} ({cycles.length})</span>
             </h2>
             <button
               type="button"
               onClick={fetchCycles}
+              aria-label={isEn ? 'Refresh cycles' : 'Segarkan riwayat'}
               className="text-xs text-rose-700 hover:text-rose-900 font-semibold flex items-center gap-1 cursor-pointer"
             >
-              <span>🔄 Segarkan</span>
+              <span aria-hidden="true">🔄</span>
+              <span>{isEn ? 'Refresh' : 'Segarkan'}</span>
             </button>
           </div>
 
@@ -256,15 +265,16 @@ export const CycleHistoryPage: React.FC = () => {
 
       {/* EDIT MODAL */}
       {editingCycle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-primary/50 backdrop-blur-xs animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-primary/50 backdrop-blur-xs animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-rose-100">
-              <h3 className="font-display font-bold text-lg text-ink-primary flex items-center gap-2">
-                <span>✏️</span> Edit Data Siklus
+              <h3 id="edit-modal-title" className="font-display font-bold text-lg text-ink-primary flex items-center gap-2">
+                <span aria-hidden="true">✏️</span> {t('history.edit')}
               </h3>
               <button
                 type="button"
                 onClick={() => setEditingCycle(null)}
+                aria-label={isEn ? 'Close' : 'Tutup'}
                 className="w-8 h-8 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 flex items-center justify-center text-sm font-bold cursor-pointer"
               >
                 ✕
@@ -274,18 +284,18 @@ export const CycleHistoryPage: React.FC = () => {
             <form onSubmit={handleSaveEdit} className="space-y-4">
               <div>
                 <DatePicker
-                  label="Hari Pertama Haid Terakhir (HPHT)"
+                  label={t('calculator.hpht')}
                   required
                   value={editHpht}
                   onChange={(val) => setEditHpht(val)}
-                  placeholder="Pilih HPHT..."
+                  placeholder={isEn ? 'Select LMP date...' : 'Pilih HPHT...'}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-ink-primary mb-1">
-                    Panjang Siklus (hari)
+                    {t('calculator.cycleLength')}
                   </label>
                   <input
                     type="number"
@@ -299,7 +309,7 @@ export const CycleHistoryPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-ink-primary mb-1">
-                    Lama Haid (hari)
+                    {t('calculator.periodDuration')}
                   </label>
                   <input
                     type="number"
@@ -315,7 +325,7 @@ export const CycleHistoryPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-ink-primary mb-1">
-                  Fase Luteal Personal (hari)
+                  {t('calculator.lutealPhase')}
                 </label>
                 <input
                   type="number"
@@ -326,7 +336,9 @@ export const CycleHistoryPage: React.FC = () => {
                   onChange={(e) => setEditLutealPhase(parseInt(e.target.value, 10) || 14)}
                   className="w-full px-3 py-2 rounded-xl border border-rose-200 bg-rose-50/30 text-center font-bold text-sm outline-none"
                 />
-                <span className="text-[10px] text-ink-muted block mt-1">Standar klinis 14 hari (rentang 10 - 18 hari).</span>
+                <span className="text-[10px] text-ink-muted block mt-1">
+                  {isEn ? 'Clinical standard 14 days (range 10–18 days).' : 'Standar klinis 14 hari (rentang 10 - 18 hari).'}
+                </span>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-4 border-t border-rose-100">
@@ -335,14 +347,14 @@ export const CycleHistoryPage: React.FC = () => {
                   onClick={() => setEditingCycle(null)}
                   className="px-4 py-2 rounded-xl border border-rose-200 text-xs font-semibold text-ink-secondary hover:bg-rose-50 cursor-pointer"
                 >
-                  Batal
+                  {isEn ? 'Cancel' : 'Batal'}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="px-5 py-2 rounded-xl bg-petal-600 hover:bg-petal-700 text-white text-xs font-bold shadow-md shadow-petal-200 disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
+                  {isSubmitting ? t('auth.login.processing') : (isEn ? 'Save Changes' : 'Simpan Perubahan')}
                 </button>
               </div>
             </form>
@@ -352,15 +364,16 @@ export const CycleHistoryPage: React.FC = () => {
 
       {/* RESET MODAL */}
       {resettingCycle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-primary/50 backdrop-blur-xs animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-primary/50 backdrop-blur-xs animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-rose-100">
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-rose-100">
-              <h3 className="font-display font-bold text-lg text-ink-primary flex items-center gap-2">
-                <span>🔄</span> Reset Prediksi Siklus
+              <h3 id="reset-modal-title" className="font-display font-bold text-lg text-ink-primary flex items-center gap-2">
+                <span aria-hidden="true">🔄</span> {t('history.reset')}
               </h3>
               <button
                 type="button"
                 onClick={() => setResettingCycle(null)}
+                aria-label={isEn ? 'Close' : 'Tutup'}
                 className="w-8 h-8 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 flex items-center justify-center text-sm font-bold cursor-pointer"
               >
                 ✕
@@ -368,23 +381,25 @@ export const CycleHistoryPage: React.FC = () => {
             </div>
 
             <p className="text-xs text-ink-secondary mb-4 leading-relaxed bg-amber-50/70 p-3 rounded-xl border border-amber-200 text-amber-900">
-              Gunakan fitur ini jika menstruasi datang lebih awal atau terlambat dari prediksi kalendar. Sistem akan menghitung ulang seluruh fase ovulasi dan masa subur secara otomatis.
+              {isEn
+                ? 'Use this if your period arrived earlier or later than expected. The system will automatically recalculate all phases and fertility windows.'
+                : 'Gunakan fitur ini jika menstruasi datang lebih awal atau terlambat dari prediksi kalendar. Sistem akan menghitung ulang seluruh fase ovulasi dan masa subur secara otomatis.'}
             </p>
 
             <form onSubmit={handleSaveReset} className="space-y-4">
               <div>
                 <DatePicker
-                  label="HPHT Baru / Aktual"
+                  label={isEn ? 'New Actual LMP Date' : 'HPHT Baru / Aktual'}
                   required
                   value={resetHpht}
                   onChange={(val) => setResetHpht(val)}
-                  placeholder="Pilih HPHT baru..."
+                  placeholder={isEn ? 'Select new LMP date...' : 'Pilih HPHT baru...'}
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-ink-primary mb-1">
-                  Penyesuaian Panjang Siklus (hari)
+                  {t('calculator.cycleLength')}
                 </label>
                 <input
                   type="number"
@@ -403,14 +418,14 @@ export const CycleHistoryPage: React.FC = () => {
                   onClick={() => setResettingCycle(null)}
                   className="px-4 py-2 rounded-xl border border-rose-200 text-xs font-semibold text-ink-secondary hover:bg-rose-50 cursor-pointer"
                 >
-                  Batal
+                  {isEn ? 'Cancel' : 'Batal'}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-md shadow-amber-200 disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? 'Mereset...' : 'Hitung Ulang Siklus'}
+                  {isSubmitting ? t('auth.login.processing') : (isEn ? 'Recalculate Cycle' : 'Hitung Ulang Siklus')}
                 </button>
               </div>
             </form>
@@ -420,16 +435,18 @@ export const CycleHistoryPage: React.FC = () => {
 
       {/* DELETE CONFIRMATION MODAL */}
       {deletingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-primary/50 backdrop-blur-xs animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-primary/50 backdrop-blur-xs animate-in fade-in" role="alertdialog" aria-modal="true" aria-labelledby="delete-dialog-title">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-rose-100 text-center">
-            <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto mb-3">
+            <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto mb-3" aria-hidden="true">
               🗑️
             </div>
-            <h4 className="font-display font-bold text-base text-ink-primary">
-              Hapus Siklus Ini?
-            </h4>
+            <h3 id="delete-dialog-title" className="font-display font-bold text-base text-ink-primary">
+              {isEn ? 'Delete this cycle?' : 'Hapus Siklus Ini?'}
+            </h3>
             <p className="text-xs text-ink-secondary mt-1 leading-relaxed">
-              Data siklus beserta seluruh perhitungan fase di dalamnya akan dihapus secara permanen.
+              {isEn
+                ? 'This cycle data and all calculated phases will be permanently deleted.'
+                : 'Data siklus beserta seluruh perhitungan fase di dalamnya akan dihapus secara permanen.'}
             </p>
             <div className="flex items-center justify-center gap-2.5 mt-5">
               <button
@@ -437,7 +454,7 @@ export const CycleHistoryPage: React.FC = () => {
                 onClick={() => setDeletingId(null)}
                 className="px-4 py-2 rounded-xl border border-rose-200 text-xs font-semibold text-ink-secondary hover:bg-rose-50 cursor-pointer"
               >
-                Batal
+                {isEn ? 'Cancel' : 'Batal'}
               </button>
               <button
                 type="button"
@@ -445,7 +462,7 @@ export const CycleHistoryPage: React.FC = () => {
                 onClick={confirmDelete}
                 className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-200 disabled:opacity-50 cursor-pointer"
               >
-                {isSubmitting ? 'Menghapus...' : 'Ya, Hapus'}
+                {isSubmitting ? t('auth.login.processing') : (isEn ? 'Yes, Delete' : 'Ya, Hapus')}
               </button>
             </div>
           </div>
@@ -454,8 +471,8 @@ export const CycleHistoryPage: React.FC = () => {
 
       {/* Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-ink-primary text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg transition-all flex items-center gap-2 animate-in fade-in">
-          <span>✓</span>
+        <div role="status" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-ink-primary text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg transition-all flex items-center gap-2 animate-in fade-in">
+          <span aria-hidden="true">✓</span>
           <span>{toastMessage}</span>
         </div>
       )}
