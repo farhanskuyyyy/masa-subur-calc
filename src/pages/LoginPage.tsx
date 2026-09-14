@@ -48,22 +48,8 @@ export const LoginPage: React.FC = () => {
       <div className="w-full max-w-md">
         {/* Floating Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex w-14 h-14 rounded-3xl bg-gradient-to-tr from-rose-500 via-pink-500 to-rose-600 items-center justify-center text-white shadow-lg shadow-rose-200 mb-3">
-            <svg
-              className="w-7 h-7"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 2C6.5 2 2 6.5 2 12c0 3.8 2.1 7.1 5.3 8.8.7.4 1.5-.1 1.5-.9v-2.3c0-.4.3-.8.7-.9 1.6-.4 3.4-.4 5 0 .4.1.7.5.7.9v2.3c0 .8.8 1.3 1.5.9 3.2-1.7 5.3-5 5.3-8.8 0-5.5-4.5-10-10-10z"></path>
-              <path
-                d="M12 7c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5z"
-                fill="rgba(255,255,255,0.25)"
-              ></path>
-            </svg>
+          <div className="inline-flex w-14 h-14 rounded-3xl overflow-hidden shadow-lg shadow-rose-200 mb-3">
+            <img src="/logo-luna.svg" alt="Luna" className="w-full h-full object-contain" />
           </div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-ink-primary">
             Selamat Datang Kembali

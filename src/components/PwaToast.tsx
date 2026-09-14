@@ -111,7 +111,7 @@ export const PwaToast: React.FC = () => {
         <div className="bg-white/95 backdrop-blur-md border border-rose-200/90 shadow-xl shadow-rose-900/10 rounded-2xl p-4">
           <div className="flex items-start gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-white shrink-0 shadow-sm shadow-rose-300">
-              <span className="font-bold text-lg">L</span>
+              <img src="/logo-luna.svg" alt="L" className="w-6 h-6 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-sm font-bold text-gray-900 leading-snug">
@@ -167,7 +167,7 @@ export const PwaToast: React.FC = () => {
       <div className="bg-white/95 backdrop-blur-md border border-rose-200/90 shadow-xl shadow-rose-900/10 rounded-2xl p-4">
         <div className="flex items-start gap-3.5">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-white shrink-0 shadow-sm shadow-rose-300">
-            <span className="font-bold text-lg">L</span>
+            <img src="/logo-luna.svg" alt="L" className="w-6 h-6 object-contain" />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-bold text-gray-900 leading-snug">

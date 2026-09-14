@@ -61,22 +61,8 @@ export const Navbar: React.FC = () => {
             onClick={() => setIsMenuOpen(false)}
             className="flex items-center gap-3 group"
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-white shadow-md shadow-rose-300/50 group-hover:scale-105 transition-transform">
-              <svg
-                className="w-6 h-6"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2C6.5 2 2 6.5 2 12c0 3.8 2.1 7.1 5.3 8.8.7.4 1.5-.1 1.5-.9v-2.3c0-.4.3-.8.7-.9 1.6-.4 3.4-.4 5 0 .4.1.7.5.7.9v2.3c0 .8.8 1.3 1.5.9 3.2-1.7 5.3-5 5.3-8.8 0-5.5-4.5-10-10-10z"></path>
-                <path
-                  d="M12 7c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5z"
-                  fill="rgba(255,255,255,0.25)"
-                ></path>
-              </svg>
+            <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-md shadow-rose-300/50 group-hover:scale-105 transition-transform">
+              <img src="/logo-luna.svg" alt="Luna" className="w-full h-full object-contain" />
             </div>
             <div>
               <span className="font-display font-bold text-lg sm:text-xl text-ink-primary tracking-tight flex items-center gap-1.5">
