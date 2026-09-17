@@ -152,7 +152,7 @@ export const LandingPage: React.FC = () => {
           <Link
             to="/dashboard"
             aria-label={t('landing.phases.viewAnalysis')}
-            className="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold shadow-md shadow-rose-200 transition-colors whitespace-nowrap cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-md shadow-rose-200 transition-colors whitespace-nowrap cursor-pointer"
           >
             {t('landing.phases.viewAnalysis')}
           </Link>
