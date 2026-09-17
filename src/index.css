@@ -105,3 +105,19 @@ body {
       border: 1px solid #ddd !important;
   }
 }
+
+/* Mobile Safe Area & Bottom Nav utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pb-bottom-nav {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .pb-bottom-nav {
+    padding-bottom: 0 !important;
+  }
+}
+

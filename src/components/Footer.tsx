@@ -14,9 +14,10 @@ export const Footer: React.FC = () => {
   ];
 
   return (
-    <footer aria-label="Footer" className="mt-16 border-t border-rose-100 bg-white/60 py-8 px-4 sm:px-6 text-center text-xs text-ink-muted">
+    <footer aria-label="Footer" className="mt-10 sm:mt-16 border-t border-rose-100 bg-white/60 py-5 sm:py-8 px-4 sm:px-6 text-center text-xs text-ink-muted">
       <div className="max-w-4xl mx-auto space-y-3">
-        <nav aria-label="Footer Navigation" className="flex flex-wrap items-center justify-center gap-4 text-xs">
+        {/* Desktop-only footer navigation */}
+        <nav aria-label="Footer Navigation" className="hidden md:flex flex-wrap items-center justify-center gap-4 text-xs">
           {footerLinks.map((link, idx) => {
             const isActive = location.pathname === link.href;
             return (
@@ -36,7 +37,7 @@ export const Footer: React.FC = () => {
             );
           })}
         </nav>
-        <p className="leading-relaxed max-w-xl mx-auto">
+        <p className="leading-relaxed max-w-xl mx-auto hidden md:block">
           {t('footer.description')}
         </p>
         <p className="text-[11px] text-ink-muted/80">

@@ -53,7 +53,7 @@ export const Navbar: React.FC = () => {
 
   const getMobileNavLinkClass = (href: string) => {
     const isActive = location.pathname === href;
-    return `w-full py-3 px-4 flex items-center gap-3 text-sm font-medium rounded-xl transition-colors ${
+    return `w-full min-h-[44px] py-3 px-4 flex items-center gap-3 text-sm font-medium rounded-xl transition-colors ${
       isActive
         ? 'font-bold text-rose-600 bg-rose-50 border-l-4 border-rose-500'
         : 'text-gray-700 hover:text-rose-600 hover:bg-rose-50/60'
@@ -211,7 +211,7 @@ export const Navbar: React.FC = () => {
               onClick={toggleLanguage}
               aria-label={isIndonesian ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
               title={isIndonesian ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-              className="h-10 px-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+              className="min-w-[44px] min-h-[44px] h-11 px-3 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95"
             >
               <span aria-hidden="true">🌐</span>
               <span>{isIndonesian ? 'ID' : 'EN'}</span>
@@ -222,7 +222,7 @@ export const Navbar: React.FC = () => {
               onClick={() => setIsMenuOpen((prev) => !prev)}
               aria-label={isMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
               aria-expanded={isMenuOpen}
-              className="w-10 h-10 flex justify-center items-center rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer group"
+              className="min-w-[44px] min-h-[44px] w-11 h-11 flex justify-center items-center rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer group active:scale-95"
             >
               {isMenuOpen ? (
                 <img
@@ -308,7 +308,7 @@ export const Navbar: React.FC = () => {
                     setIsMenuOpen(false);
                     setIsInfoOpen(true);
                   }}
-                  className="w-full py-3 px-4 flex items-center gap-3 text-sm font-medium rounded-xl text-gray-700 hover:bg-rose-50/60 hover:text-rose-600 transition-colors text-left cursor-pointer"
+                  className="w-full min-h-[44px] py-3 px-4 flex items-center gap-3 text-sm font-medium rounded-xl text-gray-700 hover:bg-rose-50/60 hover:text-rose-600 transition-colors text-left cursor-pointer"
                 >
                   <svg
                     className="w-4 h-4 text-rose-500 shrink-0"
@@ -329,7 +329,7 @@ export const Navbar: React.FC = () => {
                   <button
                     type="button"
                     onClick={toggleLanguage}
-                    className="w-full py-2.5 px-4 flex items-center justify-between text-xs font-semibold rounded-xl bg-rose-50/80 hover:bg-rose-100 text-rose-900 transition-colors cursor-pointer"
+                    className="w-full min-h-[44px] py-3 px-4 flex items-center justify-between text-xs font-semibold rounded-xl bg-rose-50/80 hover:bg-rose-100 text-rose-900 transition-colors cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
                       <span aria-hidden="true">🌐</span>
@@ -347,7 +347,7 @@ export const Navbar: React.FC = () => {
                     setIsMenuOpen(false);
                     await handleLogout();
                   }}
-                  className="w-full py-3 px-4 flex items-center gap-3 text-sm font-semibold rounded-xl text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer border-t border-rose-100/60 mt-1"
+                  className="w-full min-h-[44px] py-3 px-4 flex items-center gap-3 text-sm font-semibold rounded-xl text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer border-t border-rose-100/60 mt-1"
                 >
                   <svg className="w-4 h-4 text-rose-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -373,7 +373,7 @@ export const Navbar: React.FC = () => {
                     setIsMenuOpen(false);
                     setIsInfoOpen(true);
                   }}
-                  className="w-full py-3 px-4 flex items-center gap-3 text-sm font-medium rounded-xl text-gray-700 hover:bg-rose-50/60 hover:text-rose-600 transition-colors text-left cursor-pointer"
+                  className="w-full min-h-[44px] py-3 px-4 flex items-center gap-3 text-sm font-medium rounded-xl text-gray-700 hover:bg-rose-50/60 hover:text-rose-600 transition-colors text-left cursor-pointer"
                 >
                   <svg
                     className="w-4 h-4 text-rose-500 shrink-0"
@@ -394,7 +394,7 @@ export const Navbar: React.FC = () => {
                   <button
                     type="button"
                     onClick={toggleLanguage}
-                    className="w-full py-2.5 px-4 flex items-center justify-between text-xs font-semibold rounded-xl bg-rose-50/80 hover:bg-rose-100 text-rose-900 transition-colors cursor-pointer"
+                    className="w-full min-h-[44px] py-3 px-4 flex items-center justify-between text-xs font-semibold rounded-xl bg-rose-50/80 hover:bg-rose-100 text-rose-900 transition-colors cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
                       <span aria-hidden="true">🌐</span>

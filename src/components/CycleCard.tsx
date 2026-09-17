@@ -82,13 +82,13 @@ export const CycleCard: React.FC<CycleCardProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2 self-end sm:self-center">
+        <div className="flex items-center gap-2 self-end sm:self-center flex-wrap">
           {onEdit && (
             <button
               type="button"
               onClick={() => onEdit(cycle)}
               aria-label={t('history.edit')}
-              className="px-3 py-1.5 rounded-xl border border-rose-200 bg-white hover:bg-rose-50 text-rose-700 text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+              className="min-h-[44px] px-3.5 py-2 rounded-xl border border-rose-200 bg-white hover:bg-rose-50 text-rose-700 text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer active:scale-98"
             >
               <span aria-hidden="true">✏️</span>
               <span>{t('history.edit')}</span>
@@ -100,7 +100,7 @@ export const CycleCard: React.FC<CycleCardProps> = ({
               type="button"
               onClick={() => onReset(cycle)}
               aria-label={t('history.reset')}
-              className="px-3 py-1.5 rounded-xl border border-amber-200 bg-amber-50/70 hover:bg-amber-100 text-amber-900 text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+              className="min-h-[44px] px-3.5 py-2 rounded-xl border border-amber-200 bg-amber-50/70 hover:bg-amber-100 text-amber-900 text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer active:scale-98"
             >
               <span aria-hidden="true">🔄</span>
               <span>{t('history.reset')}</span>
@@ -112,7 +112,7 @@ export const CycleCard: React.FC<CycleCardProps> = ({
               type="button"
               onClick={() => onDelete(cycle.id)}
               aria-label={t('history.delete')}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border border-rose-100 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition-colors cursor-pointer"
+              className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl border border-rose-100 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition-colors flex items-center justify-center cursor-pointer active:scale-98"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <polyline points="3 6 5 6 21 6"></polyline>

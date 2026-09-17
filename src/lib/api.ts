@@ -136,8 +136,35 @@ const DEMO_CYCLES_KEY = 'luna_demo_saved_cycles';
 function getDemoCycles(): UserCycle[] {
   try {
     const stored = localStorage.getItem(DEMO_CYCLES_KEY);
-    if (!stored) return [];
-    return JSON.parse(stored);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    const d = new Date();
+    d.setDate(d.getDate() - 12);
+    const yStr = d.getFullYear();
+    const mStr = String(d.getMonth() + 1).padStart(2, '0');
+    const dStr = String(d.getDate()).padStart(2, '0');
+    const startStr = `${yStr}-${mStr}-${dStr}`;
+    const id = 'demo-cycle-seed';
+    const computed = computeDemoPhases(id, startStr, 28, 5, 14);
+    const defaultCycle: UserCycle = {
+      id,
+      user_id: 'demo-user-12345',
+      cycle_start_date: startStr,
+      cycle_length: 28,
+      period_duration: 5,
+      luteal_phase_length: 14,
+      ovulation_date: computed.ovulationDate,
+      fertile_window: computed.fertileWindow,
+      next_cycle_start: computed.nextCycleStart,
+      cycle_end: computed.cycleEnd,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      phases: computed.phases,
+    };
+    saveDemoCycles([defaultCycle]);
+    return [defaultCycle];
   } catch {
     return [];
   }

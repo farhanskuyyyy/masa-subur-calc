@@ -136,7 +136,7 @@ export const CycleHistoryPage: React.FC = () => {
   };
 
   return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <main className="max-w-5xl mx-auto px-3.5 sm:px-6 py-6 sm:py-12 w-full overflow-x-hidden min-w-0">
       {/* Page Header */}
       <section aria-labelledby="history-heading" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-rose-100">
         <div>
@@ -158,11 +158,11 @@ export const CycleHistoryPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <Link
             to="/calculator"
             aria-label={t('history.calculateNew')}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold shadow-md shadow-rose-200 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold shadow-md shadow-rose-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
           >
             <span aria-hidden="true">✨</span>
             <span>{t('history.calculateNew')}</span>
@@ -241,7 +241,7 @@ export const CycleHistoryPage: React.FC = () => {
               type="button"
               onClick={fetchCycles}
               aria-label={isEn ? 'Refresh cycles' : 'Segarkan riwayat'}
-              className="text-xs text-rose-700 hover:text-rose-900 font-semibold flex items-center gap-1 cursor-pointer"
+              className="min-h-[44px] px-3 py-2 text-xs text-rose-700 hover:text-rose-900 font-semibold flex items-center gap-1.5 cursor-pointer rounded-xl hover:bg-rose-50 transition-colors"
             >
               <span aria-hidden="true">🔄</span>
               <span>{isEn ? 'Refresh' : 'Segarkan'}</span>
@@ -341,18 +341,18 @@ export const CycleHistoryPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-4 border-t border-rose-100">
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-rose-100">
                 <button
                   type="button"
                   onClick={() => setEditingCycle(null)}
-                  className="px-4 py-2 rounded-xl border border-rose-200 text-xs font-semibold text-ink-secondary hover:bg-rose-50 cursor-pointer"
+                  className="min-h-[44px] px-5 py-2.5 rounded-2xl border border-rose-200 text-xs font-semibold text-ink-secondary hover:bg-rose-50 cursor-pointer active:scale-98"
                 >
                   {isEn ? 'Cancel' : 'Batal'}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-petal-600 hover:bg-petal-700 text-white text-xs font-bold shadow-md shadow-petal-200 disabled:opacity-50 cursor-pointer"
+                  className="min-h-[44px] px-6 py-2.5 rounded-2xl bg-petal-600 hover:bg-petal-700 text-white text-xs font-bold shadow-md shadow-petal-200 disabled:opacity-50 cursor-pointer active:scale-98"
                 >
                   {isSubmitting ? t('auth.login.processing') : (isEn ? 'Save Changes' : 'Simpan Perubahan')}
                 </button>
@@ -412,18 +412,18 @@ export const CycleHistoryPage: React.FC = () => {
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-4 border-t border-rose-100">
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-rose-100">
                 <button
                   type="button"
                   onClick={() => setResettingCycle(null)}
-                  className="px-4 py-2 rounded-xl border border-rose-200 text-xs font-semibold text-ink-secondary hover:bg-rose-50 cursor-pointer"
+                  className="min-h-[44px] px-5 py-2.5 rounded-2xl border border-rose-200 text-xs font-semibold text-ink-secondary hover:bg-rose-50 cursor-pointer active:scale-98"
                 >
                   {isEn ? 'Cancel' : 'Batal'}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-md shadow-amber-200 disabled:opacity-50 cursor-pointer"
+                  className="min-h-[44px] px-6 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-md shadow-amber-200 disabled:opacity-50 cursor-pointer active:scale-98"
                 >
                   {isSubmitting ? t('auth.login.processing') : (isEn ? 'Recalculate Cycle' : 'Hitung Ulang Siklus')}
                 </button>
@@ -452,7 +452,7 @@ export const CycleHistoryPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setDeletingId(null)}
-                className="px-4 py-2 rounded-xl border border-rose-200 text-xs font-semibold text-ink-secondary hover:bg-rose-50 cursor-pointer"
+                className="min-h-[44px] px-5 py-2.5 rounded-2xl border border-rose-200 text-xs font-semibold text-ink-secondary hover:bg-rose-50 cursor-pointer active:scale-98"
               >
                 {isEn ? 'Cancel' : 'Batal'}
               </button>
@@ -460,7 +460,7 @@ export const CycleHistoryPage: React.FC = () => {
                 type="button"
                 disabled={isSubmitting}
                 onClick={confirmDelete}
-                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-200 disabled:opacity-50 cursor-pointer"
+                className="min-h-[44px] px-5 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-200 disabled:opacity-50 cursor-pointer active:scale-98"
               >
                 {isSubmitting ? t('auth.login.processing') : (isEn ? 'Yes, Delete' : 'Ya, Hapus')}
               </button>

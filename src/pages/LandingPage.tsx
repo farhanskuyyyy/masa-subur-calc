@@ -34,21 +34,21 @@ export const LandingPage: React.FC = () => {
           {t('landing.subtitle')}
         </p>
 
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+        <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-md sm:max-w-none mx-auto">
           <Link
             to="/dashboard"
             aria-label={t('landing.openCalculator')}
-            className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-pink-600 text-white font-display font-bold text-base rounded-2xl shadow-lg shadow-rose-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+            className="w-full sm:w-auto min-h-[48px] px-8 py-3.5 bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-pink-600 text-white font-display font-bold text-base rounded-2xl shadow-lg shadow-rose-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer"
           >
             <span>{t('landing.openCalculator')}</span>
           </Link>
 
           {!user ? (
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-2 w-full sm:w-auto">
               <Link
                 to="/register"
                 aria-label={t('landing.registerCta')}
-                className="w-full sm:w-auto px-6 py-4 bg-white hover:bg-rose-50 text-rose-700 border-2 border-rose-200 font-display font-bold text-base rounded-2xl shadow-sm hover:border-rose-300 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto min-h-[48px] px-6 py-3.5 bg-white hover:bg-rose-50 text-rose-700 border-2 border-rose-200 font-display font-bold text-base rounded-2xl shadow-sm hover:border-rose-300 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>{t('landing.registerCta')}</span>
                 <span className="text-rose-500" aria-hidden="true">→</span>
@@ -56,7 +56,7 @@ export const LandingPage: React.FC = () => {
               <Link
                 to="/login"
                 aria-label={t('landing.loginCta')}
-                className="w-full sm:w-auto px-5 py-4 text-xs font-bold text-rose-700 hover:text-rose-900 bg-rose-50/70 hover:bg-rose-100/70 rounded-2xl transition-colors cursor-pointer text-center"
+                className="w-full sm:w-auto min-h-[48px] px-5 py-3.5 text-sm font-bold text-rose-700 hover:text-rose-900 bg-rose-50/70 hover:bg-rose-100/70 rounded-2xl transition-colors cursor-pointer flex items-center justify-center text-center"
               >
                 {t('landing.loginCta')}
               </Link>
@@ -65,7 +65,7 @@ export const LandingPage: React.FC = () => {
             <Link
               to="/dashboard"
               aria-label={t('landing.goToDashboard')}
-              className="w-full sm:w-auto px-6 py-4 bg-white hover:bg-rose-50 text-rose-700 border-2 border-rose-200 font-display font-bold text-base rounded-2xl shadow-sm transition-all text-center"
+              className="w-full sm:w-auto min-h-[48px] px-6 py-3.5 bg-white hover:bg-rose-50 text-rose-700 border-2 border-rose-200 font-display font-bold text-base rounded-2xl shadow-sm transition-all flex items-center justify-center text-center"
             >
               {t('landing.goToDashboard')}
             </Link>
@@ -75,7 +75,7 @@ export const LandingPage: React.FC = () => {
             type="button"
             onClick={() => setIsInfoOpen(true)}
             aria-label={t('landing.learnMethod')}
-            className="w-full sm:w-auto px-4 py-4 text-xs font-semibold text-rose-600 hover:text-rose-800 bg-transparent hover:bg-rose-50 rounded-2xl transition-colors cursor-pointer"
+            className="w-full sm:w-auto min-h-[44px] px-4 py-3 text-xs font-semibold text-rose-600 hover:text-rose-800 bg-transparent hover:bg-rose-50 rounded-2xl transition-colors cursor-pointer flex items-center justify-center"
           >
             {t('landing.learnMethod')}
           </button>
@@ -221,11 +221,11 @@ export const LandingPage: React.FC = () => {
         <p className="mt-3 text-rose-100 text-sm sm:text-base max-w-xl mx-auto">
           {t('landing.banner.subtitle')}
         </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 max-w-sm sm:max-w-none mx-auto">
           <Link
             to="/dashboard"
             aria-label={t('landing.banner.cta')}
-            className="px-8 py-3.5 bg-white text-rose-700 hover:bg-rose-50 font-display font-bold text-sm sm:text-base rounded-xl shadow-lg transition-transform active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto min-h-[48px] px-8 py-3.5 bg-white text-rose-700 hover:bg-rose-50 font-display font-bold text-sm sm:text-base rounded-xl shadow-lg transition-transform active:scale-95 cursor-pointer flex items-center justify-center"
           >
             {t('landing.banner.cta')}
           </Link>
@@ -233,7 +233,7 @@ export const LandingPage: React.FC = () => {
             <Link
               to="/login"
               aria-label={t('landing.banner.login')}
-              className="px-6 py-3.5 bg-rose-700/60 hover:bg-rose-700 text-white font-display font-semibold text-sm sm:text-base rounded-xl border border-white/20 transition-colors cursor-pointer"
+              className="w-full sm:w-auto min-h-[48px] px-6 py-3.5 bg-rose-700/60 hover:bg-rose-700 text-white font-display font-semibold text-sm sm:text-base rounded-xl border border-white/20 transition-colors cursor-pointer flex items-center justify-center"
             >
               {t('landing.banner.login')}
             </Link>

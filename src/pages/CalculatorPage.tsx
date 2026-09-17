@@ -66,6 +66,7 @@ export const CalculatorPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isInfoOpen, setIsInfoOpen] = useState<boolean>(false);
+  const [mobileCalMonthIndex, setMobileCalMonthIndex] = useState<number>(0);
 
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -368,13 +369,12 @@ export const CalculatorPage: React.FC = () => {
   };
 
   return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <main className="max-w-5xl mx-auto px-3 sm:px-6 py-6 sm:py-12 w-full overflow-x-hidden min-w-0">
       {/* Header Profile Bar */}
       <section aria-labelledby="calc-page-heading" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-6 border-b border-rose-100">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" aria-hidden="true"></span>
-            <span className="text-xs font-semibold text-rose-800 uppercase tracking-wider">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
               {t('calculator.title')}
             </span>
           </div>
@@ -391,11 +391,11 @@ export const CalculatorPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
           <Link
             to="/dashboard"
             aria-label={t('nav.dashboard')}
-            className="px-3.5 py-2 rounded-xl bg-white border border-rose-200 hover:bg-rose-50 text-rose-800 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+            className="min-h-[44px] px-3.5 py-2.5 rounded-xl bg-white border border-rose-200 hover:bg-rose-50 text-rose-800 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-98"
           >
             <span>← {t('nav.dashboard')}</span>
           </Link>
@@ -403,7 +403,7 @@ export const CalculatorPage: React.FC = () => {
             type="button"
             onClick={() => setIsInfoOpen(true)}
             aria-label={t('nav.clinicalBasis')}
-            className="px-3.5 py-2 rounded-xl bg-white border border-rose-200 hover:bg-rose-50 text-rose-800 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+            className="min-h-[44px] px-3.5 py-2.5 rounded-xl bg-white border border-rose-200 hover:bg-rose-50 text-rose-800 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-98"
           >
             <span>📖 {t('nav.clinicalBasis')}</span>
           </button>
@@ -411,7 +411,7 @@ export const CalculatorPage: React.FC = () => {
             type="button"
             onClick={handleLogout}
             aria-label={t('nav.logout')}
-            className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="min-h-[44px] px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer active:scale-98"
           >
             <span>🚪 {t('nav.logout')}</span>
           </button>
@@ -470,7 +470,7 @@ export const CalculatorPage: React.FC = () => {
                 type="button"
                 onClick={() => handleQuickChip(0)}
                 aria-label={isEn ? 'Today' : 'Hari Ini'}
-                className="text-xs px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-medium transition-colors cursor-pointer"
+                className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
               >
                 {isEn ? 'Today' : 'Hari Ini'}
               </button>
@@ -478,7 +478,7 @@ export const CalculatorPage: React.FC = () => {
                 type="button"
                 onClick={() => handleQuickChip(3)}
                 aria-label={isEn ? '3 days ago' : '3 Hari Lalu'}
-                className="text-xs px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-medium transition-colors cursor-pointer"
+                className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
               >
                 {isEn ? '3 Days Ago' : '3 Hari Lalu'}
               </button>
@@ -486,7 +486,7 @@ export const CalculatorPage: React.FC = () => {
                 type="button"
                 onClick={() => handleQuickChip(7)}
                 aria-label={isEn ? '7 days ago' : '7 Hari Lalu'}
-                className="text-xs px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-medium transition-colors cursor-pointer"
+                className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
               >
                 {isEn ? '7 Days Ago' : '7 Hari Lalu'}
               </button>
@@ -494,7 +494,7 @@ export const CalculatorPage: React.FC = () => {
                 type="button"
                 onClick={() => handleQuickChip(14)}
                 aria-label={isEn ? '14 days ago' : '14 Hari Lalu'}
-                className="text-xs px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-medium transition-colors cursor-pointer"
+                className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
               >
                 {isEn ? '14 Days Ago' : '14 Hari Lalu'}
               </button>
@@ -511,7 +511,7 @@ export const CalculatorPage: React.FC = () => {
                 type="button"
                 onClick={() => setIsVariable(false)}
                 aria-pressed={!isVariable}
-                className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`min-h-[44px] py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   !isVariable
                     ? 'bg-white text-rose-700 shadow-sm border border-rose-200'
                     : 'text-ink-secondary hover:text-ink-primary'
@@ -523,7 +523,7 @@ export const CalculatorPage: React.FC = () => {
                 type="button"
                 onClick={() => setIsVariable(true)}
                 aria-pressed={isVariable}
-                className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`min-h-[44px] py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   isVariable
                     ? 'bg-white text-rose-700 shadow-sm border border-rose-200'
                     : 'text-ink-secondary hover:text-ink-primary'
@@ -551,7 +551,7 @@ export const CalculatorPage: React.FC = () => {
                   type="button"
                   onClick={() => setCycleLength((prev) => Math.max(20, prev - 1))}
                   aria-label={isEn ? 'Decrease cycle length by 1 day' : 'Kurangi panjang siklus 1 hari'}
-                  className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 font-bold text-xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
+                  className="w-12 h-12 min-w-12 min-h-12 shrink-0 rounded-2xl bg-rose-50 text-rose-600 font-bold text-2xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
                 >
                   −
                 </button>
@@ -563,7 +563,7 @@ export const CalculatorPage: React.FC = () => {
                     min={20}
                     max={45}
                     onChange={(e) => setCycleLength(parseInt(e.target.value, 10) || 28)}
-                    className="w-full px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-xl focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100 outline-none transition-all"
+                    className="w-full min-h-[48px] h-12 px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-xl focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100 outline-none transition-all"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-ink-muted">
                     {t('calculator.days')}
@@ -573,7 +573,7 @@ export const CalculatorPage: React.FC = () => {
                   type="button"
                   onClick={() => setCycleLength((prev) => Math.min(45, prev + 1))}
                   aria-label={isEn ? 'Increase cycle length by 1 day' : 'Tambah panjang siklus 1 hari'}
-                  className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 font-bold text-xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
+                  className="w-12 h-12 min-w-12 min-h-12 shrink-0 rounded-2xl bg-rose-50 text-rose-600 font-bold text-2xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
                 >
                   +
                 </button>
@@ -598,7 +598,7 @@ export const CalculatorPage: React.FC = () => {
                     min={20}
                     max={40}
                     onChange={(e) => setCycleMin(parseInt(e.target.value, 10) || 26)}
-                    className="w-full px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-lg focus:border-rose-400 focus:bg-white outline-none"
+                    className="w-full min-h-[48px] px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-base focus:border-rose-400 focus:bg-white outline-none"
                   />
                 </div>
                 <div>
@@ -612,7 +612,7 @@ export const CalculatorPage: React.FC = () => {
                     min={22}
                     max={50}
                     onChange={(e) => setCycleMax(parseInt(e.target.value, 10) || 32)}
-                    className="w-full px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-lg focus:border-rose-400 focus:bg-white outline-none"
+                    className="w-full min-h-[48px] px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-base focus:border-rose-400 focus:bg-white outline-none"
                   />
                 </div>
               </div>
@@ -637,7 +637,7 @@ export const CalculatorPage: React.FC = () => {
                 type="button"
                 onClick={() => setPeriodDuration((prev) => Math.max(2, prev - 1))}
                 aria-label={isEn ? 'Decrease period duration by 1 day' : 'Kurangi lama haid 1 hari'}
-                className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 font-bold text-xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
+                className="w-12 h-12 min-w-12 min-h-12 shrink-0 rounded-2xl bg-rose-50 text-rose-600 font-bold text-2xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
               >
                 −
               </button>
@@ -649,7 +649,7 @@ export const CalculatorPage: React.FC = () => {
                   min={2}
                   max={10}
                   onChange={(e) => setPeriodDuration(parseInt(e.target.value, 10) || 6)}
-                  className="w-full px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-xl focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100 outline-none transition-all"
+                  className="w-full min-h-[48px] h-12 px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-xl focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100 outline-none transition-all"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-ink-muted">
                   {t('calculator.days')}
@@ -659,7 +659,7 @@ export const CalculatorPage: React.FC = () => {
                 type="button"
                 onClick={() => setPeriodDuration((prev) => Math.min(10, prev + 1))}
                 aria-label={isEn ? 'Increase period duration by 1 day' : 'Tambah lama haid 1 hari'}
-                className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 font-bold text-xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
+                className="w-12 h-12 min-w-12 min-h-12 shrink-0 rounded-2xl bg-rose-50 text-rose-600 font-bold text-2xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
               >
                 +
               </button>
@@ -671,7 +671,7 @@ export const CalculatorPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsAdvancedOpen((prev) => !prev)}
-              className="w-full py-2 flex items-center justify-between text-xs font-semibold text-rose-700 hover:text-rose-900 transition-colors focus:outline-none cursor-pointer"
+              className="w-full min-h-[44px] py-3 px-2 flex items-center justify-between text-xs font-semibold text-rose-700 hover:text-rose-900 transition-colors focus:outline-none cursor-pointer rounded-xl active:bg-rose-50/50"
               aria-expanded={isAdvancedOpen}
             >
               <span className="flex items-center gap-1.5">
@@ -1026,7 +1026,7 @@ export const CalculatorPage: React.FC = () => {
           </div>
 
           {/* 3-MONTH CALENDAR VIEW */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-100">
+          <div className="bg-white rounded-3xl p-2.5 sm:p-8 shadow-luna-card border border-rose-100 overflow-hidden min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-rose-100">
               <div>
                 <div className="flex items-center gap-2">
@@ -1063,8 +1063,119 @@ export const CalculatorPage: React.FC = () => {
               </div>
             </div>
 
-            {/* 3 Months Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
+            {/* Mobile Single-Month View with Navigation (< md) */}
+            <div className="md:hidden pt-4">
+              {threeMonthsData[mobileCalMonthIndex] && (() => {
+                const m = threeMonthsData[mobileCalMonthIndex];
+                return (
+                  <div>
+                    {/* Mobile Month Navigation Header */}
+                    <div className="flex items-center justify-between py-2 px-1 mb-3 bg-rose-50/60 rounded-2xl border border-rose-100">
+                      <button
+                        type="button"
+                        onClick={() => setMobileCalMonthIndex((prev) => Math.max(0, prev - 1))}
+                        disabled={mobileCalMonthIndex === 0}
+                        aria-label={isEn ? 'Previous month' : 'Bulan sebelumnya'}
+                        className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-white border border-rose-200 text-rose-700 font-bold shadow-xs hover:bg-rose-50 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer text-xl"
+                      >
+                        ‹
+                      </button>
+                      <div className="text-center">
+                        <h4 className="font-display font-bold text-base text-ink-primary">
+                          {m.monthTitle}
+                        </h4>
+                        <span className="text-[11px] text-ink-muted">
+                          {isEn
+                            ? `Month ${mobileCalMonthIndex + 1} of ${threeMonthsData.length}`
+                            : `Bulan ${mobileCalMonthIndex + 1} dari ${threeMonthsData.length}`}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setMobileCalMonthIndex((prev) => Math.min(threeMonthsData.length - 1, prev + 1))}
+                        disabled={mobileCalMonthIndex >= threeMonthsData.length - 1}
+                        aria-label={isEn ? 'Next month' : 'Bulan berikutnya'}
+                        className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-white border border-rose-200 text-rose-700 font-bold shadow-xs hover:bg-rose-50 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer text-xl"
+                      >
+                        ›
+                      </button>
+                    </div>
+
+                    <div className="bg-rose-50/30 rounded-2xl p-1 sm:p-4 border border-rose-100 shadow-sm">
+                      {/* Day Headers */}
+                      <div className="grid grid-cols-7 gap-0.5 sm:gap-1 text-center text-xs font-bold text-ink-muted mb-2">
+                        <div className="text-rose-500 py-1">{isEn ? 'Sun' : 'Min'}</div>
+                        <div className="py-1">{isEn ? 'Mon' : 'Sen'}</div>
+                        <div className="py-1">{isEn ? 'Tue' : 'Sel'}</div>
+                        <div className="py-1">{isEn ? 'Wed' : 'Rab'}</div>
+                        <div className="py-1">{isEn ? 'Thu' : 'Kam'}</div>
+                        <div className="py-1">{isEn ? 'Fri' : 'Jum'}</div>
+                        <div className="text-rose-700 py-1">{isEn ? 'Sat' : 'Sab'}</div>
+                      </div>
+
+                      {/* Days Grid - 44px min touch target */}
+                      <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
+                        {Array.from({ length: m.firstDayOfWeek }).map((_, i) => (
+                          <div key={`mob-pad-${i}`} className="min-h-[44px] h-11 rounded-lg"></div>
+                        ))}
+
+                        {m.days.map((item) => {
+                          const isCurrentToday = isSameDay(item.date, today);
+                          const isSelected = isSameDay(item.date, selectedDate);
+                          const evalData = item.evaluation;
+
+                          let cellClasses =
+                            'min-h-[44px] h-11 w-full rounded-xl flex flex-col items-center justify-center text-xs font-bold cursor-pointer transition-all relative select-none ';
+
+                          if (evalData?.phase === 'period') {
+                            cellClasses += 'bg-rose-400 text-white shadow-sm ';
+                          } else if (evalData?.phase === 'ovulation') {
+                            cellClasses +=
+                              'bg-rose-500 text-white font-bold ovulation-glow ring-2 ring-rose-300 ring-offset-1 ';
+                          } else if (
+                            evalData?.phase === 'fertile-peak' ||
+                            evalData?.phase === 'fertile' ||
+                            evalData?.phase === 'fertile-late'
+                          ) {
+                            cellClasses += 'bg-amber-400 text-amber-950 font-semibold ';
+                          } else {
+                            cellClasses += 'bg-gray-100 text-gray-600 hover:bg-gray-200 ';
+                          }
+
+                          if (isSelected) {
+                            cellClasses += 'ring-2 ring-rose-700 ring-offset-2 z-10 ';
+                          }
+
+                          if (isCurrentToday) {
+                            cellClasses += 'underline decoration-2 font-extrabold ';
+                          }
+
+                          return (
+                            <button
+                              type="button"
+                              key={`mob-day-${item.dayNumber}`}
+                              onClick={() => setSelectedDate(item.date)}
+                              className={cellClasses}
+                              aria-label={`${item.dayNumber} ${m.monthTitle} - ${evalData?.phaseName || ''}`}
+                            >
+                              <span className="leading-none text-sm">{item.dayNumber}</span>
+                              {evalData?.phase === 'ovulation' ? (
+                                <span className="text-[9px] leading-none mt-0.5" aria-hidden="true">★</span>
+                              ) : evalData?.phase === 'period' ? (
+                                <span className="text-[8px] leading-none mt-0.5 opacity-80" aria-hidden="true">💧</span>
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Desktop 3 Months Grid (>= md) */}
+            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
               {threeMonthsData.map((m) => (
                 <div
                   key={`${m.year}-${m.month}`}
@@ -1228,13 +1339,13 @@ export const CalculatorPage: React.FC = () => {
 
           {/* ACTION BUTTONS & MEDICAL DISCLAIMER */}
           <div className="text-center space-y-4 pt-2">
-            <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-center gap-3 max-w-xl sm:max-w-none mx-auto">
               <button
                 type="button"
                 onClick={matchingCycle ? handleUpdateCycle : handleSaveCycle}
                 disabled={isSavingCycle}
                 aria-label={matchingCycle ? t('calculator.update') : t('calculator.save')}
-                className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold text-xs shadow-md shadow-rose-200 hover:from-rose-600 hover:to-pink-600 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold text-sm shadow-md shadow-rose-200 hover:from-rose-600 hover:to-pink-600 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98"
               >
                 <span aria-hidden="true">{matchingCycle ? '🔄' : '💾'}</span>
                 <span>
@@ -1248,7 +1359,7 @@ export const CalculatorPage: React.FC = () => {
               <Link
                 to="/dashboard"
                 aria-label={t('nav.dashboard')}
-                className="px-5 py-2.5 rounded-2xl bg-petal-500 hover:bg-petal-600 text-white text-xs font-bold shadow-md shadow-petal-200 transition-all flex items-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-2xl bg-petal-500 hover:bg-petal-600 text-white text-sm font-bold shadow-md shadow-petal-200 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
                 <span aria-hidden="true">📊</span>
                 <span>{isEn ? 'View in Dashboard' : 'Lihat di Dashboard'}</span>
@@ -1257,7 +1368,7 @@ export const CalculatorPage: React.FC = () => {
                 type="button"
                 onClick={handleCopySummary}
                 aria-label={isEn ? 'Copy summary' : 'Salin ringkasan'}
-                className="px-5 py-2.5 rounded-2xl bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-2xl bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
                 <span aria-hidden="true">📋</span>
                 <span>{isEn ? 'Copy Summary' : 'Salin Ringkasan'}</span>
@@ -1266,7 +1377,7 @@ export const CalculatorPage: React.FC = () => {
                 type="button"
                 onClick={() => window.print()}
                 aria-label={isEn ? 'Print report' : 'Cetak laporan'}
-                className="px-5 py-2.5 rounded-2xl bg-white border border-rose-200 text-ink-primary hover:bg-rose-50 text-xs font-semibold shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-2xl bg-white border border-rose-200 text-ink-primary hover:bg-rose-50 text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
                 <span aria-hidden="true">🖨️</span>
                 <span>{isEn ? 'Print Report' : 'Cetak Laporan'}</span>
@@ -1275,7 +1386,7 @@ export const CalculatorPage: React.FC = () => {
                 type="button"
                 onClick={handleReset}
                 aria-label={isEn ? 'Reset' : 'Atur ulang'}
-                className="px-5 py-2.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
                 <span aria-hidden="true">🔄</span>
                 <span>{isEn ? 'Reset Data' : 'Atur Ulang Data'}</span>
