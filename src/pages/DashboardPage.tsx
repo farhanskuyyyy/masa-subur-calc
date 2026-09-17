@@ -1035,7 +1035,7 @@ export const DashboardPage: React.FC = () => {
                     {/* Days */}
                     <div className="grid grid-cols-7 gap-1">
                       {Array.from({ length: m.firstDayOfWeek }).map((_, i) => (
-                        <div key={`pad-${i}`} className="h-9 sm:h-10 rounded-lg"></div>
+                        <div key={`pad-${i}`} className="h-10 sm:h-11 rounded-lg"></div>
                       ))}
 
                       {m.days.map((item) => {
@@ -1044,7 +1044,7 @@ export const DashboardPage: React.FC = () => {
                         const evalData = item.evaluation;
 
                         let cellClasses =
-                          'h-9 sm:h-10 rounded-xl flex flex-col items-center justify-center text-xs font-semibold cursor-pointer transition-all relative select-none ';
+                          'h-10 sm:h-11 rounded-xl flex flex-col items-center justify-center text-xs font-semibold cursor-pointer transition-all relative select-none ';
 
                         if (evalData?.phase === 'period') {
                           cellClasses += 'bg-rose-400 text-white shadow-sm ';

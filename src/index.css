@@ -46,7 +46,11 @@ body {
   min-height: 100vh;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
-  max-width: 100vw;
+  max-width: 100%;
+}
+
+body {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* Dial Animation & Ring */
@@ -120,4 +124,12 @@ body {
     padding-bottom: 0 !important;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 

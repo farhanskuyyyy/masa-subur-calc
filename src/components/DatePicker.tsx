@@ -246,7 +246,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               type="button"
               onClick={handlePrevMonth}
               aria-label={isEn ? 'Previous month' : 'Bulan Sebelumnya'}
-              className="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
+              className="w-10 h-10 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <polyline points="15 18 9 12 15 6"></polyline>
@@ -263,7 +263,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               type="button"
               onClick={handleNextMonth}
               aria-label={isEn ? 'Next month' : 'Bulan Berikutnya'}
-              className="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
+              className="w-10 h-10 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <polyline points="9 18 15 12 9 6"></polyline>
@@ -287,7 +287,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               return (
                 <div
                   key={`prev-${i}`}
-                  className="h-8 sm:h-9 rounded-xl flex items-center justify-center text-xs text-gray-300 select-none"
+                  className="h-10 sm:h-11 rounded-xl flex items-center justify-center text-xs text-gray-300 select-none"
                 >
                   {prevDayNum}
                 </div>
@@ -306,7 +306,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               if (maxDate && dateISO > maxDate) isDisabled = true;
 
               let btnClasses =
-                'h-8 sm:h-9 rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-colors relative select-none cursor-pointer ';
+                'h-10 sm:h-11 rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-colors relative select-none cursor-pointer ';
 
               if (isDisabled) {
                 btnClasses += 'text-gray-300 opacity-40 cursor-not-allowed ';
@@ -345,7 +345,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             {Array.from({ length: remainingCells }).map((_, i) => (
               <div
                 key={`next-${i}`}
-                className="h-8 sm:h-9 rounded-xl flex items-center justify-center text-xs text-gray-300 select-none"
+                className="h-10 sm:h-11 rounded-xl flex items-center justify-center text-xs text-gray-300 select-none"
               >
                 {i + 1}
               </div>
