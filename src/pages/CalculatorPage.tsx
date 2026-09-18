@@ -18,12 +18,18 @@ import {
 } from '../utils/calculator';
 import type { DayEvaluation, MonthCalendarData } from '../types/calculator';
 
+type CalculatorStep = 'input' | 'result' | 'detail';
+
 export const CalculatorPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { user, signOut, isDemoUser, token } = useAuth();
   const navigate = useNavigate();
 
   const isEn = (i18n.language || 'en').startsWith('en');
+
+  // Step state: 'input' | 'result' | 'detail'
+  const [step, setStep] = useState<CalculatorStep>('input');
+  const [hasCalculated, setHasCalculated] = useState<boolean>(false);
 
   // Form State
   const initialDate = useMemo(() => toISODateString(addDays(new Date(), -10)), []);
@@ -61,8 +67,7 @@ export const CalculatorPage: React.FC = () => {
   const [savedCycles, setSavedCycles] = useState<UserCycle[]>([]);
   const [isSavingCycle, setIsSavingCycle] = useState<boolean>(false);
 
-  // Results visibility & calculation state
-  const [hasCalculated, setHasCalculated] = useState<boolean>(true);
+  // Results & calendar state
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isInfoOpen, setIsInfoOpen] = useState<boolean>(false);
@@ -300,6 +305,52 @@ export const CalculatorPage: React.FC = () => {
   }, [todayEval]);
   const strokeOffset = circumference - circumference * progressRatio;
 
+  // Is today fertile?
+  const isFertileToday = useMemo(() => {
+    if (!todayEval) return false;
+    return (
+      todayEval.phase === 'fertile' ||
+      todayEval.phase === 'fertile-peak' ||
+      todayEval.phase === 'ovulation' ||
+      todayEval.phase === 'fertile-late'
+    );
+  }, [todayEval]);
+
+  // Date formatting helpers
+  const formatDisplayDate = useCallback((date: Date): string => {
+    const loc = isEn ? 'en-US' : 'id-ID';
+    return date.toLocaleDateString(loc, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }, [isEn]);
+
+  const formatFertileRange = useCallback((start: Date, end: Date): string => {
+    const loc = isEn ? 'en-US' : 'id-ID';
+    const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+    const sameYear = start.getFullYear() === end.getFullYear();
+
+    if (sameMonth) {
+      const monthName = end.toLocaleDateString(loc, { month: 'long' });
+      return `${start.getDate()}–${end.getDate()} ${monthName} ${end.getFullYear()}`;
+    } else if (sameYear) {
+      const startMonth = start.toLocaleDateString(loc, { month: 'short' });
+      const endMonth = end.toLocaleDateString(loc, { month: 'short' });
+      return `${start.getDate()} ${startMonth} – ${end.getDate()} ${endMonth} ${end.getFullYear()}`;
+    } else {
+      return `${formatDateShort(start, i18n.language)} – ${formatDateShort(end, i18n.language)}`;
+    }
+  }, [isEn, i18n.language]);
+
+  const daysToNextPeriod = useMemo(() => {
+    if (!calculatedMetrics) return 0;
+    const nextPeriodRef = calculatedMetrics.isVariable
+      ? calculatedMetrics.nextPeriodStartDate
+      : calculatedMetrics.nextPeriodDate;
+    return diffInDays(nextPeriodRef, today);
+  }, [calculatedMetrics, today]);
+
   // Handlers
   const handleQuickChip = (daysAgo: number) => {
     const d = addDays(new Date(), -daysAgo);
@@ -310,9 +361,8 @@ export const CalculatorPage: React.FC = () => {
     e.preventDefault();
     if (validationError) return;
     setHasCalculated(true);
-    setTimeout(() => {
-      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    setStep('result');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleReset = () => {
@@ -323,6 +373,8 @@ export const CalculatorPage: React.FC = () => {
     setLutealPhase(14);
     setIsVariable(false);
     setSelectedDate(now);
+    setStep('input');
+    setHasCalculated(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showToast(isEn ? 'Cycle settings have been reset.' : 'Pengaturan siklus berhasil diatur ulang.');
   };
@@ -418,124 +470,181 @@ export const CalculatorPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CALCULATOR INPUT CARD */}
-      <section aria-labelledby="calc-input-heading" className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-100 mb-8 transition-all">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-6 border-b border-rose-100">
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl" aria-hidden="true">🌸</span>
-            <div>
-              <h2 id="calc-input-heading" className="font-display font-bold text-lg sm:text-xl text-ink-primary">
-                {t('calculator.title')}
-              </h2>
-              <p className="text-xs text-ink-secondary">
-                {t('calculator.subtitle')}
-              </p>
-            </div>
-          </div>
+      {/* STEP INDICATOR (1 Input → 2 Hasil → 3 Detail) */}
+      <nav aria-label={isEn ? 'Calculation Steps' : 'Tahapan Perhitungan'} className="mb-6">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 max-w-md mx-auto">
+          {/* Step 1: Input */}
           <button
             type="button"
             onClick={() => {
-              const refDate = addDays(new Date(), -12);
-              setLastPeriodInput(toISODateString(refDate));
-              setCycleLength(28);
-              setPeriodDuration(6);
-              setLutealPhase(14);
-              setIsVariable(false);
-              showToast(isEn ? '28-day standard example applied.' : 'Data contoh siklus standar 28 hari diterapkan.');
+              setStep('input');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            aria-label={isEn ? 'Apply 28-day standard example' : 'Terapkan contoh standar 28 hari'}
-            className="text-xs font-medium text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl border border-rose-200 transition-colors cursor-pointer self-start sm:self-auto"
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              step === 'input'
+                ? 'bg-rose-600 text-white shadow-sm ring-4 ring-rose-100'
+                : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
+            }`}
           >
-            {isEn ? 'Standard Example (28 Days)' : 'Contoh Standar (28 Hari)'}
+            <span
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ${
+                step === 'input' ? 'bg-white text-rose-600' : 'bg-rose-200 text-rose-800'
+              }`}
+            >
+              1
+            </span>
+            <span>{t('calculator.stepInput', 'Input')}</span>
+          </button>
+
+          <span className="text-rose-300 font-bold select-none" aria-hidden="true">→</span>
+
+          {/* Step 2: Hasil */}
+          <button
+            type="button"
+            disabled={!calculatedMetrics || !hasCalculated}
+            onClick={() => {
+              if (calculatedMetrics && hasCalculated) {
+                setStep('result');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all ${
+              step === 'result'
+                ? 'bg-rose-600 text-white shadow-sm ring-4 ring-rose-100'
+                : calculatedMetrics && hasCalculated
+                ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 cursor-pointer'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+            }`}
+          >
+            <span
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ${
+                step === 'result' ? 'bg-white text-rose-600' : 'bg-rose-200 text-rose-800'
+              }`}
+            >
+              2
+            </span>
+            <span>{t('calculator.stepResult', 'Hasil')}</span>
+          </button>
+
+          <span className="text-rose-300 font-bold select-none" aria-hidden="true">→</span>
+
+          {/* Step 3: Detail */}
+          <button
+            type="button"
+            disabled={!calculatedMetrics || !hasCalculated}
+            onClick={() => {
+              if (calculatedMetrics && hasCalculated) {
+                setStep('detail');
+              }
+            }}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all ${
+              step === 'detail'
+                ? 'bg-rose-600 text-white shadow-sm ring-4 ring-rose-100'
+                : calculatedMetrics && hasCalculated
+                ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 cursor-pointer'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+            }`}
+          >
+            <span
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ${
+                step === 'detail' ? 'bg-white text-rose-600' : 'bg-rose-200 text-rose-800'
+              }`}
+            >
+              3
+            </span>
+            <span>{t('calculator.stepDetail', 'Detail')}</span>
           </button>
         </div>
+      </nav>
 
-        <form onSubmit={handleFormSubmit} className="space-y-6" noValidate aria-label={t('calculator.title')}>
-          {/* 1. Date of Last Period */}
-          <div>
-            <DatePicker
-              id="lastPeriodInput"
-              label={t('calculator.hpht')}
-              required
-              value={lastPeriodInput}
-              onChange={(val) => setLastPeriodInput(val)}
-              placeholder={isEn ? 'Select LMP date...' : 'Pilih tanggal HPHT...'}
-              menstruationDays={periodDateStrings}
-            />
-
-            {/* Quick Date Chips */}
-            <div className="flex flex-wrap items-center gap-2 mt-2.5">
-              <span className="text-xs text-ink-muted mr-1">{isEn ? 'Quick select:' : 'Pilihan Cepat:'}</span>
-              <button
-                type="button"
-                onClick={() => handleQuickChip(0)}
-                aria-label={isEn ? 'Today' : 'Hari Ini'}
-                className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
-              >
-                {isEn ? 'Today' : 'Hari Ini'}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickChip(3)}
-                aria-label={isEn ? '3 days ago' : '3 Hari Lalu'}
-                className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
-              >
-                {isEn ? '3 Days Ago' : '3 Hari Lalu'}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickChip(7)}
-                aria-label={isEn ? '7 days ago' : '7 Hari Lalu'}
-                className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
-              >
-                {isEn ? '7 Days Ago' : '7 Hari Lalu'}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickChip(14)}
-                aria-label={isEn ? '14 days ago' : '14 Hari Lalu'}
-                className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
-              >
-                {isEn ? '14 Days Ago' : '14 Hari Lalu'}
-              </button>
+      {/* STEP 1: INPUT FORM (visible when step === 'input') */}
+      {step === 'input' && (
+        <section
+          aria-labelledby="calc-input-heading"
+          className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-100 mb-8 step-fade-in transition-all"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-6 border-b border-rose-100">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl" aria-hidden="true">🌸</span>
+              <div>
+                <h2 id="calc-input-heading" className="font-display font-bold text-lg sm:text-xl text-ink-primary">
+                  {t('calculator.title')}
+                </h2>
+                <p className="text-xs text-ink-secondary">
+                  {t('calculator.subtitle')}
+                </p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                const refDate = addDays(new Date(), -12);
+                setLastPeriodInput(toISODateString(refDate));
+                setCycleLength(28);
+                setPeriodDuration(6);
+                setLutealPhase(14);
+                setIsVariable(false);
+                showToast(isEn ? '28-day standard example applied.' : 'Data contoh siklus standar 28 hari diterapkan.');
+              }}
+              aria-label={isEn ? 'Apply 28-day standard example' : 'Terapkan contoh standar 28 hari'}
+              className="text-xs font-medium text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl border border-rose-200 transition-colors cursor-pointer self-start sm:self-auto active:scale-98"
+            >
+              {isEn ? 'Standard Example (28 Days)' : 'Contoh Standar (28 Hari)'}
+            </button>
           </div>
 
-          {/* 2. Cycle Regularity Selector */}
-          <div>
-            <label className="block text-sm font-semibold text-ink-primary mb-2 flex items-center gap-1.5">
-              <span className="text-rose-500" aria-hidden="true">🔄</span> {t('calculator.cycleType')}
-            </label>
-            <div className="grid grid-cols-2 gap-3 p-1.5 bg-rose-50/50 rounded-2xl border border-rose-100">
-              <button
-                type="button"
-                onClick={() => setIsVariable(false)}
-                aria-pressed={!isVariable}
-                className={`min-h-[44px] py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  !isVariable
-                    ? 'bg-white text-rose-700 shadow-sm border border-rose-200'
-                    : 'text-ink-secondary hover:text-ink-primary'
-                }`}
-              >
-                ✓ {t('calculator.regular')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsVariable(true)}
-                aria-pressed={isVariable}
-                className={`min-h-[44px] py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  isVariable
-                    ? 'bg-white text-rose-700 shadow-sm border border-rose-200'
-                    : 'text-ink-secondary hover:text-ink-primary'
-                }`}
-              >
-                ~ {t('calculator.variable')}
-              </button>
-            </div>
-          </div>
+          <form onSubmit={handleFormSubmit} className="space-y-6" noValidate aria-label={t('calculator.title')}>
+            {/* 1. Date of Last Period (HPHT) */}
+            <div>
+              <DatePicker
+                id="lastPeriodInput"
+                label={t('calculator.hpht')}
+                required
+                value={lastPeriodInput}
+                onChange={(val) => setLastPeriodInput(val)}
+                placeholder={isEn ? 'Select LMP date...' : 'Pilih tanggal HPHT...'}
+                menstruationDays={periodDateStrings}
+              />
 
-          {/* 3. Cycle Length Inputs */}
-          {!isVariable ? (
+              {/* Quick Date Chips */}
+              <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                <span className="text-xs text-ink-muted mr-1">{isEn ? 'Quick select:' : 'Pilihan Cepat:'}</span>
+                <button
+                  type="button"
+                  onClick={() => handleQuickChip(0)}
+                  aria-label={isEn ? 'Today' : 'Hari Ini'}
+                  className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
+                >
+                  {isEn ? 'Today' : 'Hari Ini'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickChip(3)}
+                  aria-label={isEn ? '3 days ago' : '3 Hari Lalu'}
+                  className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
+                >
+                  {isEn ? '3 Days Ago' : '3 Hari Lalu'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickChip(7)}
+                  aria-label={isEn ? '7 days ago' : '7 Hari Lalu'}
+                  className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
+                >
+                  {isEn ? '7 Days Ago' : '7 Hari Lalu'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickChip(14)}
+                  aria-label={isEn ? '14 days ago' : '14 Hari Lalu'}
+                  className="min-h-[44px] text-xs px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold transition-colors cursor-pointer flex items-center justify-center active:scale-95"
+                >
+                  {isEn ? '14 Days Ago' : '14 Hari Lalu'}
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Cycle Length Inputs */}
             <div className="space-y-2">
               <label
                 htmlFor="cycleLengthInput"
@@ -579,226 +688,414 @@ export const CalculatorPage: React.FC = () => {
                 </button>
               </div>
             </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-xs text-ink-secondary bg-rose-50/60 p-3 rounded-xl border border-rose-100">
-                {isEn
-                  ? 'Ogino-Knaus clinical method takes into account cycle variations over the past 6 months to expand the fertile window accurately.'
-                  : 'Metode Ogino-Knaus memperhitungkan variasi terpendek dan terpanjang selama 6 bulan terakhir untuk memperluas rentang jendela subur secara akurat.'}
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="cycleMinInput" className="block text-xs font-semibold text-ink-primary mb-1.5">
-                    {t('calculator.shortestCycle')}
-                  </label>
-                  <input
-                    type="number"
-                    id="cycleMinInput"
-                    value={cycleMin}
-                    min={20}
-                    max={40}
-                    onChange={(e) => setCycleMin(parseInt(e.target.value, 10) || 26)}
-                    className="w-full min-h-[48px] px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-base focus:border-rose-400 focus:bg-white outline-none"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="cycleMaxInput" className="block text-xs font-semibold text-ink-primary mb-1.5">
-                    {t('calculator.longestCycle')}
-                  </label>
-                  <input
-                    type="number"
-                    id="cycleMaxInput"
-                    value={cycleMax}
-                    min={22}
-                    max={50}
-                    onChange={(e) => setCycleMax(parseInt(e.target.value, 10) || 32)}
-                    className="w-full min-h-[48px] px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-base focus:border-rose-400 focus:bg-white outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* 4. Period Duration */}
-          <div className="space-y-2">
-            <label
-              htmlFor="periodDurationInput"
-              className="block text-sm font-semibold text-ink-primary flex items-center justify-between"
-            >
-              <span className="flex items-center gap-2">
-                <span className="text-rose-500" aria-hidden="true">🩸</span> {t('calculator.periodDuration')}
-              </span>
-              <span className="text-xs font-normal text-ink-muted">
-                {isEn ? 'Normal: 3–7 days' : 'Normal: 3–7 hari'}
-              </span>
-            </label>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setPeriodDuration((prev) => Math.max(2, prev - 1))}
-                aria-label={isEn ? 'Decrease period duration by 1 day' : 'Kurangi lama haid 1 hari'}
-                className="w-12 h-12 min-w-12 min-h-12 shrink-0 rounded-2xl bg-rose-50 text-rose-600 font-bold text-2xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
+            {/* 3. Period Duration */}
+            <div className="space-y-2">
+              <label
+                htmlFor="periodDurationInput"
+                className="block text-sm font-semibold text-ink-primary flex items-center justify-between"
               >
-                −
-              </button>
-              <div className="flex-1 relative">
-                <input
-                  type="number"
-                  id="periodDurationInput"
-                  value={periodDuration}
-                  min={2}
-                  max={10}
-                  onChange={(e) => setPeriodDuration(parseInt(e.target.value, 10) || 6)}
-                  className="w-full min-h-[48px] h-12 px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-xl focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100 outline-none transition-all"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-ink-muted">
-                  {t('calculator.days')}
+                <span className="flex items-center gap-2">
+                  <span className="text-rose-500" aria-hidden="true">🩸</span> {t('calculator.periodDuration')}
                 </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPeriodDuration((prev) => Math.min(10, prev + 1))}
-                aria-label={isEn ? 'Increase period duration by 1 day' : 'Tambah lama haid 1 hari'}
-                className="w-12 h-12 min-w-12 min-h-12 shrink-0 rounded-2xl bg-rose-50 text-rose-600 font-bold text-2xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          {/* 5. Advanced Luteal Phase Accordion */}
-          <div className="pt-2 border-t border-rose-100">
-            <button
-              type="button"
-              onClick={() => setIsAdvancedOpen((prev) => !prev)}
-              className="w-full min-h-[44px] py-3 px-2 flex items-center justify-between text-xs font-semibold text-rose-700 hover:text-rose-900 transition-colors focus:outline-none cursor-pointer rounded-xl active:bg-rose-50/50"
-              aria-expanded={isAdvancedOpen}
-            >
-              <span className="flex items-center gap-1.5">
-                ⚙️ {t('calculator.advancedSettings')}
-              </span>
-              <span
-                className="text-sm transform transition-transform duration-200"
-                style={{ transform: isAdvancedOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                aria-hidden="true"
-              >
-                ▾
-              </span>
-            </button>
-
-            {isAdvancedOpen && (
-              <div className="mt-3 p-4 bg-rose-50/50 rounded-2xl border border-rose-100 flex items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-xs font-bold text-ink-primary">{t('calculator.lutealPhase')}</h3>
-                  <p className="text-[11px] text-ink-secondary mt-0.5">
-                    {isEn
-                      ? 'Duration from post-ovulation to next period. Clinical standard: 14 days (10–18 days).'
-                      : 'Durasi pasca-ovulasi hingga menstruasi berikutnya. Standar klinis: 14 hari (rentang 10 - 18 hari).'}
-                  </p>
-                </div>
-                <div className="w-24">
+                <span className="text-xs font-normal text-ink-muted">
+                  {isEn ? 'Normal: 3–7 days' : 'Normal: 3–7 hari'}
+                </span>
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPeriodDuration((prev) => Math.max(2, prev - 1))}
+                  aria-label={isEn ? 'Decrease period duration by 1 day' : 'Kurangi lama haid 1 hari'}
+                  className="w-12 h-12 min-w-12 min-h-12 shrink-0 rounded-2xl bg-rose-50 text-rose-600 font-bold text-2xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
+                >
+                  −
+                </button>
+                <div className="flex-1 relative">
                   <input
                     type="number"
-                    value={lutealPhase}
-                    min={10}
-                    max={18}
-                    onChange={(e) => setLutealPhase(parseInt(e.target.value, 10) || 14)}
-                    aria-label={t('calculator.lutealPhase')}
-                    className="w-full px-2.5 py-2 rounded-xl border border-rose-200 bg-white text-center font-bold text-ink-primary text-sm focus:border-rose-400 outline-none"
+                    id="periodDurationInput"
+                    value={periodDuration}
+                    min={2}
+                    max={10}
+                    onChange={(e) => setPeriodDuration(parseInt(e.target.value, 10) || 6)}
+                    className="w-full min-h-[48px] h-12 px-4 py-3 rounded-2xl border-2 border-rose-100 bg-rose-50/30 text-ink-primary font-bold text-center text-xl focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100 outline-none transition-all"
                   />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-ink-muted">
+                    {t('calculator.days')}
+                  </span>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setPeriodDuration((prev) => Math.min(10, prev + 1))}
+                  aria-label={isEn ? 'Increase period duration by 1 day' : 'Tambah lama haid 1 hari'}
+                  className="w-12 h-12 min-w-12 min-h-12 shrink-0 rounded-2xl bg-rose-50 text-rose-600 font-bold text-2xl hover:bg-rose-100 active:scale-95 transition-all flex items-center justify-center border border-rose-200 cursor-pointer"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* 4. Advanced Settings Expandable (Hidden by default) */}
+            <div className="pt-2 border-t border-rose-100">
+              <button
+                type="button"
+                onClick={() => setIsAdvancedOpen((prev) => !prev)}
+                className="w-full min-h-[44px] py-3 px-2 flex items-center justify-between text-xs font-semibold text-rose-700 hover:text-rose-900 transition-colors focus:outline-none cursor-pointer rounded-xl active:bg-rose-50/50"
+                aria-expanded={isAdvancedOpen}
+              >
+                <span className="flex items-center gap-1.5">
+                  ⚙️ {t('calculator.advancedSettings')}
+                </span>
+                <span
+                  className="text-sm transform transition-transform duration-200"
+                  style={{ transform: isAdvancedOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                  aria-hidden="true"
+                >
+                  ▾
+                </span>
+              </button>
+
+              {isAdvancedOpen && (
+                <div className="mt-3 p-4 sm:p-5 bg-rose-50/50 rounded-2xl border border-rose-100 space-y-4 step-fade-in">
+                  {/* Cycle Regularity */}
+                  <div>
+                    <label className="block text-xs font-semibold text-ink-primary mb-2 flex items-center gap-1.5">
+                      <span className="text-rose-500" aria-hidden="true">🔄</span> {t('calculator.cycleType')}
+                    </label>
+                    <div className="grid grid-cols-2 gap-3 p-1.5 bg-white rounded-2xl border border-rose-100">
+                      <button
+                        type="button"
+                        onClick={() => setIsVariable(false)}
+                        aria-pressed={!isVariable}
+                        className={`min-h-[44px] py-2.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          !isVariable
+                            ? 'bg-rose-500 text-white shadow-xs'
+                            : 'text-ink-secondary hover:text-ink-primary'
+                        }`}
+                      >
+                        ✓ {t('calculator.regular')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsVariable(true)}
+                        aria-pressed={isVariable}
+                        className={`min-h-[44px] py-2.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          isVariable
+                            ? 'bg-rose-500 text-white shadow-xs'
+                            : 'text-ink-secondary hover:text-ink-primary'
+                        }`}
+                      >
+                        ~ {t('calculator.variable')}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Variable Cycle Inputs */}
+                  {isVariable && (
+                    <div className="space-y-3 pt-2">
+                      <p className="text-xs text-ink-secondary bg-white p-3 rounded-xl border border-rose-100">
+                        {isEn
+                          ? 'Ogino-Knaus clinical method takes into account cycle variations over the past 6 months to expand the fertile window accurately.'
+                          : 'Metode Ogino-Knaus memperhitungkan variasi terpendek dan terpanjang selama 6 bulan terakhir untuk memperluas rentang jendela subur secara akurat.'}
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label htmlFor="cycleMinInput" className="block text-xs font-semibold text-ink-primary mb-1">
+                            {t('calculator.shortestCycle')}
+                          </label>
+                          <input
+                            type="number"
+                            id="cycleMinInput"
+                            value={cycleMin}
+                            min={20}
+                            max={40}
+                            onChange={(e) => setCycleMin(parseInt(e.target.value, 10) || 26)}
+                            className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-rose-200 bg-white text-ink-primary font-bold text-center text-sm focus:border-rose-400 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="cycleMaxInput" className="block text-xs font-semibold text-ink-primary mb-1">
+                            {t('calculator.longestCycle')}
+                          </label>
+                          <input
+                            type="number"
+                            id="cycleMaxInput"
+                            value={cycleMax}
+                            min={22}
+                            max={50}
+                            onChange={(e) => setCycleMax(parseInt(e.target.value, 10) || 32)}
+                            className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-rose-200 bg-white text-ink-primary font-bold text-center text-sm focus:border-rose-400 outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Luteal Phase Length */}
+                  <div className="flex items-center justify-between gap-4 pt-2 border-t border-rose-100">
+                    <div>
+                      <h3 className="text-xs font-bold text-ink-primary">{t('calculator.lutealPhase')}</h3>
+                      <p className="text-[11px] text-ink-secondary mt-0.5">
+                        {isEn
+                          ? 'Post-ovulation duration. Clinical standard: 14 days (10–18 days).'
+                          : 'Durasi pasca-ovulasi. Standar klinis: 14 hari (rentang 10 - 18 hari).'}
+                      </p>
+                    </div>
+                    <div className="w-24">
+                      <input
+                        type="number"
+                        value={lutealPhase}
+                        min={10}
+                        max={18}
+                        onChange={(e) => setLutealPhase(parseInt(e.target.value, 10) || 14)}
+                        aria-label={t('calculator.lutealPhase')}
+                        className="w-full px-2.5 py-2 rounded-xl border border-rose-200 bg-white text-center font-bold text-ink-primary text-sm focus:border-rose-400 outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Error Message */}
+            {validationError && (
+              <div role="alert" className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
+                <span className="text-base" aria-hidden="true">⚠️</span>
+                <span>{validationError}</span>
               </div>
             )}
+
+            {/* Primary CTA: Calculate Button */}
+            <button
+              type="submit"
+              aria-label={t('calculator.calculate')}
+              className="w-full py-4 px-6 bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-pink-600 text-white font-display font-bold text-base sm:text-lg rounded-2xl shadow-lg shadow-rose-200 active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+            >
+              <span aria-hidden="true">✨</span>
+              <span>{t('calculator.calculate')}</span>
+            </button>
+          </form>
+        </section>
+      )}
+
+      {/* STEP 2: QUICK RESULT CARD (visible in 'result' and 'detail' steps) */}
+      {(step === 'result' || step === 'detail') && calculatedMetrics && todayEval && (
+        <section
+          ref={resultsRef}
+          aria-labelledby="quick-result-heading"
+          className="bg-gradient-to-br from-white via-rose-50/40 to-pink-50/30 rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-200/80 mb-8 step-fade-in transition-all"
+        >
+          {/* Card Top Row: Badge + Back to Input (Edit) Button */}
+          <div className="flex items-center justify-between gap-3 pb-4 mb-5 border-b border-rose-100">
+            <div className="flex items-center gap-2">
+              <span className="text-xl" aria-hidden="true">🌸</span>
+              <h2 id="quick-result-heading" className="font-display font-bold text-lg sm:text-xl text-ink-primary">
+                {t('calculator.result')}
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setStep('input');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              aria-label={isEn ? 'Edit input data' : 'Ubah data input'}
+              className="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-98"
+            >
+              <span aria-hidden="true">✏️</span>
+              <span>{t('calculator.editInput', isEn ? 'Edit Input' : 'Ubah Data')}</span>
+            </button>
           </div>
 
-          {/* Error Message */}
-          {validationError && (
-            <div role="alert" className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
-              <span className="text-base" aria-hidden="true">⚠️</span>
-              <span>{validationError}</span>
-            </div>
-          )}
-
-          {/* Calculate Submit Button */}
-          <button
-            type="submit"
-            aria-label={t('calculator.calculate')}
-            className="w-full py-4 px-6 bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-pink-600 text-white font-display font-bold text-base sm:text-lg rounded-2xl shadow-lg shadow-rose-200 active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+          {/* PROMINENT TODAY STATUS HERO BANNER */}
+          <div
+            className={`rounded-2xl p-5 sm:p-6 mb-6 transition-all ${
+              isFertileToday
+                ? 'bg-gradient-to-r from-amber-50/90 via-rose-50/80 to-pink-50/90 border-2 border-amber-200/90 shadow-xs'
+                : 'bg-gradient-to-r from-emerald-50/80 via-teal-50/60 to-rose-50/40 border-2 border-emerald-200/80 shadow-xs'
+            }`}
           >
-            <span aria-hidden="true">✨</span>
-            <span>{t('calculator.calculate')}</span>
-          </button>
-        </form>
-      </section>
-
-      {/* RESULTS SECTION */}
-      {hasCalculated && calculatedMetrics && todayEval && (
-        <section ref={resultsRef} aria-labelledby="results-heading" className="space-y-8">
-          {/* SAVE / UPDATE SIKLUS BANNER */}
-          <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 rounded-3xl p-6 sm:p-7 text-white shadow-lg shadow-rose-200/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 transition-all animate-in fade-in">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl" aria-hidden="true">💾</span>
-                <h2 id="results-heading" className="font-display font-bold text-lg sm:text-xl">
-                  {matchingCycle ? t('calculator.update') : t('calculator.save')}
-                </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold mb-2 border ${
+                    isFertileToday
+                      ? 'bg-amber-100 text-amber-900 border-amber-300'
+                      : todayEval.phase === 'period'
+                      ? 'bg-rose-100 text-rose-900 border-rose-300'
+                      : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-current" aria-hidden="true"></span>
+                  {todayEval.phaseName} • {isEn ? `Cycle Day ${todayEval.cycleDay}` : `Hari ke-${todayEval.cycleDay}`}
+                </span>
+                <h3 className="font-display font-extrabold text-xl sm:text-2xl text-ink-primary">
+                  {isFertileToday
+                    ? (isEn ? 'Today you are in your fertile window 🌟' : 'Hari ini kamu sedang masa subur 🌟')
+                    : (isEn ? 'Today is outside your fertile window 🛡️' : 'Hari ini belum subur 🛡️')}
+                </h3>
+                <p className="text-xs sm:text-sm text-ink-secondary mt-1.5 leading-relaxed">
+                  {isEn ? 'Pregnancy chance today: ' : 'Peluang kehamilan hari ini: '}
+                  <strong className="text-rose-700 font-bold">{todayEval.chanceName} ({todayEval.chancePct})</strong>
+                  {' — '}
+                  <span>{todayEval.chanceDesc}</span>
+                </p>
               </div>
-              <p className="text-xs sm:text-sm text-rose-100 max-w-xl leading-relaxed">
-                {matchingCycle ? (
-                  <>
-                    {isEn
-                      ? `Found existing cycle with LMP ${matchingCycle.cycle_start_date}. Click Update to refresh this cycle, or save new.`
-                      : `Ditemukan siklus tersimpan dengan HPHT ${matchingCycle.cycle_start_date}. Klik 'Update Siklus' untuk memperbarui prediksi siklus ini, atau simpan baru jika ini periode haid berikutnya.`}
-                  </>
-                ) : (
-                  isEn
-                    ? 'Save your calculated cycle to database to track periods, fertile windows, and cycle history on Dashboard.'
-                    : 'Simpan hasil perhitungan ini ke database agar fase menstruasi, masa subur, dan riwayat siklus Anda tercatat secara konsisten di akun Anda dan langsung tampil di Dashboard.'
-                )}
+
+              <div className="sm:text-right shrink-0">
+                <span className="text-xs text-ink-muted block">
+                  {formatDateFull(today, i18n.language)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3 FOCUSED RESULT METRIC CARDS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {/* 1. Next Period */}
+            <div className="bg-gradient-to-br from-rose-50/80 to-pink-50/50 rounded-2xl p-5 border border-rose-200 shadow-xs">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl" aria-hidden="true">🩸</span>
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-rose-700 block">
+                    {t('dashboard.nextPeriod')}
+                  </span>
+                  <span className="text-xs text-ink-muted">
+                    {daysToNextPeriod > 0
+                      ? `${daysToNextPeriod} ${isEn ? 'days away' : 'hari lagi'}`
+                      : daysToNextPeriod === 0
+                      ? (isEn ? 'Estimated today' : 'Perkiraan hari ini')
+                      : (isEn ? `Late by ${Math.abs(daysToNextPeriod)} days` : `Terlambat ${Math.abs(daysToNextPeriod)} hari`)}
+                  </span>
+                </div>
+              </div>
+              <p className="text-lg sm:text-xl font-extrabold text-rose-700 mt-2">
+                {!calculatedMetrics.isVariable
+                  ? formatDisplayDate(calculatedMetrics.nextPeriodDate)
+                  : `${formatDateShort(calculatedMetrics.nextPeriodStartDate, i18n.language)} – ${formatDateShort(
+                      calculatedMetrics.nextPeriodEndDate,
+                      i18n.language
+                    )}`}
+              </p>
+              <p className="text-xs text-rose-900/70 mt-1.5 leading-relaxed">
+                {isEn ? 'Estimated next period start' : 'Perkiraan dimulainya siklus menstruasi berikutnya'}
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto flex-shrink-0">
-              {matchingCycle ? (
-                <>
-                  <button
-                    type="button"
-                    disabled={isSavingCycle}
-                    onClick={handleUpdateCycle}
-                    aria-label={t('calculator.update')}
-                    className="flex-1 md:flex-initial px-5 py-3 rounded-2xl bg-white text-rose-700 hover:bg-rose-50 font-display font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                  >
-                    <span aria-hidden="true">🔄</span>
-                    <span>{isSavingCycle ? t('auth.login.processing') : t('calculator.update')}</span>
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isSavingCycle}
-                    onClick={handleSaveCycle}
-                    aria-label={t('calculator.save')}
-                    className="flex-1 md:flex-initial px-4 py-3 rounded-2xl bg-rose-700/60 hover:bg-rose-700 text-white font-display font-bold text-xs border border-white/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                    title={t('calculator.save')}
-                  >
-                    <span aria-hidden="true">➕</span>
-                    <span>{t('calculator.save')}</span>
-                  </button>
-                </>
-              ) : (
+            {/* 2. Ovulation */}
+            <div className="bg-gradient-to-br from-amber-50/80 to-orange-50/50 rounded-2xl p-5 border border-amber-200 shadow-xs">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl" aria-hidden="true">🥚</span>
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800 block">
+                    {t('dashboard.ovulation')}
+                  </span>
+                  <span className="text-xs text-ink-muted">{isEn ? 'Peak Fertility' : 'Puncak Kesuburan'}</span>
+                </div>
+              </div>
+              <p className="text-lg sm:text-xl font-extrabold text-amber-700 mt-2">
+                {!calculatedMetrics.isVariable
+                  ? formatDisplayDate(calculatedMetrics.ovulationDate)
+                  : `${formatDateShort(calculatedMetrics.ovulationStartDate, i18n.language)} – ${formatDateShort(
+                      calculatedMetrics.ovulationEndDate,
+                      i18n.language
+                    )}`}
+              </p>
+              <p className="text-xs text-amber-900/70 mt-1.5 leading-relaxed">
+                {isEn ? 'Mature egg released into fallopian tube' : 'Pelepasan sel telur matang (viabel 12–24 jam)'}
+              </p>
+            </div>
+
+            {/* 3. Fertile Window */}
+            <div className="bg-gradient-to-br from-pink-50/80 to-rose-50/50 rounded-2xl p-5 border border-pink-200 shadow-xs">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl" aria-hidden="true">🌟</span>
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-pink-700 block">
+                    {t('dashboard.fertileWindow')}
+                  </span>
+                  <span className="text-xs text-ink-muted">{isEn ? 'Optimal Window' : 'Rentang Optimal'}</span>
+                </div>
+              </div>
+              <p className="text-lg sm:text-xl font-extrabold text-pink-700 mt-2">
+                {formatFertileRange(calculatedMetrics.fertileStart, calculatedMetrics.fertileEnd)}
+              </p>
+              <p className="text-xs text-pink-900/70 mt-1.5 leading-relaxed">
+                {isEn ? 'Highest conception probability days' : 'Rentang peluang hamil paling tinggi (sperma & ovum)'}
+              </p>
+            </div>
+          </div>
+
+          {/* ACTION BAR: Save Button (Secondary Outline) + Lihat Detail Link */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-rose-100">
+            <div className="flex flex-wrap items-center gap-2.5">
+              {/* SECONDARY SAVE / UPDATE BUTTON (OUTLINE STYLE) */}
+              <button
+                type="button"
+                disabled={isSavingCycle}
+                onClick={matchingCycle ? handleUpdateCycle : handleSaveCycle}
+                aria-label={matchingCycle ? t('calculator.update') : t('calculator.save')}
+                className="min-h-[44px] px-5 py-2.5 rounded-2xl border-2 border-rose-500 hover:bg-rose-50 text-rose-700 font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98"
+              >
+                <span aria-hidden="true">{matchingCycle ? '🔄' : '💾'}</span>
+                <span>
+                  {isSavingCycle
+                    ? t('auth.login.processing')
+                    : matchingCycle
+                    ? t('calculator.update')
+                    : t('calculator.save')}
+                </span>
+              </button>
+
+              {matchingCycle && (
                 <button
                   type="button"
                   disabled={isSavingCycle}
                   onClick={handleSaveCycle}
-                  aria-label={t('calculator.save')}
-                  className="w-full md:w-auto px-6 py-3.5 rounded-2xl bg-white text-rose-700 hover:bg-rose-50 font-display font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  aria-label={isEn ? 'Save as new cycle' : 'Simpan sebagai siklus baru'}
+                  className="min-h-[44px] px-3.5 py-2.5 rounded-2xl border border-rose-200 hover:bg-rose-50 text-rose-700 font-medium text-xs transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+                  title={isEn ? 'Save as separate cycle entry' : 'Simpan sebagai entri siklus terpisah'}
                 >
-                  <span aria-hidden="true">💾</span>
-                  <span>{isSavingCycle ? t('auth.login.processing') : t('calculator.save')}</span>
+                  <span aria-hidden="true">➕</span>
+                  <span>{isEn ? 'Save New' : 'Simpan Baru'}</span>
                 </button>
               )}
-            </div>
-          </div>
 
-          {/* CENTERPIECE: LUNA DAILY DIAL */}
+              <Link
+                to="/dashboard"
+                aria-label={t('nav.dashboard')}
+                className="min-h-[44px] px-4 py-2.5 rounded-2xl bg-white border border-rose-200 hover:bg-rose-50 text-ink-secondary text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-98"
+              >
+                <span aria-hidden="true">📊</span>
+                <span>{t('nav.dashboard')}</span>
+              </Link>
+            </div>
+
+            {/* LIHAT DETAIL TEXT LINK WITH ARROW */}
+            <button
+              type="button"
+              onClick={() => {
+                const nextStep = step === 'detail' ? 'result' : 'detail';
+                setStep(nextStep);
+              }}
+              aria-expanded={step === 'detail'}
+              className="min-h-[44px] px-3 py-2 text-xs sm:text-sm font-bold text-rose-600 hover:text-rose-800 transition-colors inline-flex items-center justify-center sm:justify-start gap-1 cursor-pointer hover:underline self-end sm:self-auto"
+            >
+              <span>
+                {step === 'detail'
+                  ? (isEn ? 'Hide Details ↑' : 'Sembunyikan Detail ↑')
+                  : (isEn ? 'View Details →' : 'Lihat Detail →')}
+              </span>
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* STEP 3: FULL DETAIL SECTION (expanded only when step === 'detail') */}
+      {step === 'detail' && calculatedMetrics && todayEval && (
+        <section aria-label={isEn ? 'Full Cycle Details' : 'Detail Siklus Lengkap'} className="space-y-8 step-fade-in">
+          {/* LUNA DAILY DIAL CENTERPIECE */}
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-100 text-center relative overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-semibold px-3 py-1 rounded-full bg-rose-100 text-rose-800 flex items-center gap-1.5">
@@ -906,125 +1203,6 @@ export const CalculatorPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 4 KEY RESULT CARDS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5" aria-label={t('calculator.result')}>
-            {/* Card 1: Ovulation Date */}
-            <div className="result-enter bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-6 border border-rose-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-3xl" aria-hidden="true">🥚</span>
-                <div>
-                  <span className="text-xs font-bold text-rose-800 uppercase tracking-wider block">
-                    {t('dashboard.ovulation')}
-                  </span>
-                  <h3 className="font-bold text-ink-primary text-base">{isEn ? 'Peak Fertility' : 'Puncak Kesuburan'}</h3>
-                </div>
-              </div>
-              <p className="text-2xl font-extrabold text-rose-600 mt-2">
-                {!calculatedMetrics.isVariable
-                  ? formatDateFull(calculatedMetrics.ovulationDate, i18n.language)
-                  : `${formatDateShort(calculatedMetrics.ovulationStartDate, i18n.language)} — ${formatDateShort(
-                      calculatedMetrics.ovulationEndDate,
-                      i18n.language
-                    )}`}
-              </p>
-              <p className="text-xs text-rose-800/80 mt-2 leading-relaxed">
-                {isEn
-                  ? 'Most fertile day in your cycle. Mature egg is released into the fallopian tube.'
-                  : 'Ini adalah hari paling subur dalam siklus Anda. Sel telur matang dilepaskan dan bertahan 12–24 jam di tuba fallopi.'}
-              </p>
-            </div>
-
-            {/* Card 2: Fertile Window */}
-            <div className="result-enter bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-3xl" aria-hidden="true">🌟</span>
-                <div>
-                  <span className="text-xs font-bold text-amber-800 uppercase tracking-wider block">
-                    {t('dashboard.fertileWindow')}
-                  </span>
-                  <h3 className="font-bold text-ink-primary text-base">{isEn ? 'Optimal Conception Window' : 'Peluang Hamil Tertinggi'}</h3>
-                </div>
-              </div>
-              <p className="text-2xl font-extrabold text-amber-700 mt-2">
-                {`${formatDateShort(calculatedMetrics.fertileStart, i18n.language)} — ${formatDateShort(
-                  calculatedMetrics.fertileEnd,
-                  i18n.language
-                )}`}
-              </p>
-              <p className="text-xs text-amber-800/80 mt-2 leading-relaxed">
-                {isEn
-                  ? 'Highest conception probability window (5 days before ovulation up to 1 day post-ovulation).'
-                  : 'Periode dengan peluang kehamilan tertinggi (5 hari sebelum ovulasi s/d 1 hari pasca-ovulasi karena sperma bertahan hingga 5 hari).'}
-              </p>
-            </div>
-
-            {/* Card 3: Safe Window */}
-            <div className="result-enter bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-3xl" aria-hidden="true">🛡️</span>
-                <div>
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
-                    {t('dashboard.safeWindow')}
-                  </span>
-                  <h3 className="font-bold text-ink-primary text-base">{isEn ? 'Low Conception Chance' : 'Peluang Pembuahan Rendah'}</h3>
-                </div>
-              </div>
-              <p className="text-xl font-bold text-emerald-700 mt-2">
-                {!calculatedMetrics.isVariable ? (
-                  calculatedMetrics.safeBeforeEnd >= calculatedMetrics.safeBeforeStart ? (
-                    <span>
-                      {formatDateShort(calculatedMetrics.safeBeforeStart, i18n.language)} —{' '}
-                      {formatDateShort(calculatedMetrics.safeBeforeEnd, i18n.language)} &{' '}
-                      {formatDateShort(calculatedMetrics.safeAfterStart, i18n.language)} {isEn ? 'onwards' : 'ke depan'}
-                    </span>
-                  ) : (
-                    <span>{formatDateShort(calculatedMetrics.safeAfterStart, i18n.language)} {isEn ? 'onwards' : 'ke depan'}</span>
-                  )
-                ) : (
-                  <span>{formatDateShort(calculatedMetrics.safeAfterStart, i18n.language)} {isEn ? 'onwards' : 'ke depan'}</span>
-                )}
-              </p>
-              <p className="text-xs text-emerald-800/80 mt-2 leading-relaxed">
-                {isEn
-                  ? 'Relatively lower conception chance outside fertile window (not 0%).'
-                  : 'Peluang kehamilan relatif lebih rendah saat lapisan endometrium belum matang atau sel telur sudah tidak lagi viabel (bukan 0%).'}
-              </p>
-            </div>
-
-            {/* Card 4: Next 3 Cycles */}
-            <div className="result-enter bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-6 border border-violet-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-3xl" aria-hidden="true">📅</span>
-                <div>
-                  <span className="text-xs font-bold text-violet-800 uppercase tracking-wider block">
-                    {isEn ? 'Next 3 Cycles' : '3 Siklus ke Depan'}
-                  </span>
-                  <h3 className="font-bold text-ink-primary text-base">{isEn ? 'Calendar Projections' : 'Proyeksi Kalendar'}</h3>
-                </div>
-              </div>
-              <div className="space-y-2 mt-3">
-                {nextThreeCycles.map((c) => (
-                  <div
-                    key={c.cycleNumber}
-                    className="flex flex-wrap items-center justify-between bg-white/70 backdrop-blur-sm rounded-xl px-3.5 py-2 border border-violet-100 text-xs"
-                  >
-                    <span className="font-bold text-violet-900">{isEn ? `Cycle ${c.cycleNumber}` : `Siklus ${c.cycleNumber}`}</span>
-                    <div className="flex items-center gap-3">
-                      <span>
-                        <span className="text-ink-muted">{t('phases.period')}:</span>{' '}
-                        <strong className="text-rose-600">{formatDateShort(c.cycleStart, i18n.language)}</strong>
-                      </span>
-                      <span>
-                        <span className="text-ink-muted">{t('dashboard.ovulation')}:</span>{' '}
-                        <strong className="text-amber-700">{formatDateShort(c.ovulDate, i18n.language)}</strong>
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
           {/* 3-MONTH CALENDAR VIEW */}
           <div className="bg-white rounded-3xl p-2.5 sm:p-8 shadow-luna-card border border-rose-100 overflow-hidden min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-rose-100">
@@ -1036,7 +1214,9 @@ export const CalculatorPage: React.FC = () => {
                   </h3>
                 </div>
                 <p className="text-xs text-ink-secondary mt-1">
-                  {isEn ? 'Visual calendar for 3 consecutive months. Click any date to view daily biology.' : 'Tampilan visual kalender untuk 3 bulan berturut-turut. Ketuk tanggal manapun untuk melihat status biologis harian.'}
+                  {isEn
+                    ? 'Visual calendar for 3 consecutive months. Click any date to view daily biology.'
+                    : 'Tampilan visual kalender untuk 3 bulan berturut-turut. Ketuk tanggal manapun untuk melihat status biologis harian.'}
                 </p>
               </div>
 
@@ -1256,7 +1436,7 @@ export const CalculatorPage: React.FC = () => {
             </div>
           </div>
 
-          {/* SELECTED DAY CLINICAL DETAIL */}
+          {/* DAILY BIOLOGY DETAIL (Selected Date) */}
           {selectedDayEval && (
             <div className="bg-gradient-to-br from-white to-rose-50/50 rounded-3xl p-6 sm:p-8 shadow-luna-card border border-rose-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-rose-100">
@@ -1337,62 +1517,82 @@ export const CalculatorPage: React.FC = () => {
             </div>
           )}
 
-          {/* ACTION BUTTONS & MEDICAL DISCLAIMER */}
-          <div className="text-center space-y-4 pt-2">
-            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-center gap-3 max-w-xl sm:max-w-none mx-auto">
-              <button
-                type="button"
-                onClick={matchingCycle ? handleUpdateCycle : handleSaveCycle}
-                disabled={isSavingCycle}
-                aria-label={matchingCycle ? t('calculator.update') : t('calculator.save')}
-                className="w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold text-sm shadow-md shadow-rose-200 hover:from-rose-600 hover:to-pink-600 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98"
-              >
-                <span aria-hidden="true">{matchingCycle ? '🔄' : '💾'}</span>
-                <span>
-                  {isSavingCycle
-                    ? t('auth.login.processing')
-                    : matchingCycle
-                    ? t('calculator.update')
-                    : t('calculator.save')}
+          {/* CYCLE PROJECTIONS (Next 3 Cycles) */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-luna-card border border-violet-100">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-3xl" aria-hidden="true">📅</span>
+              <div>
+                <span className="text-xs font-bold text-violet-800 uppercase tracking-wider block">
+                  {isEn ? 'Next 3 Cycles' : '3 Siklus ke Depan'}
                 </span>
-              </button>
-              <Link
-                to="/dashboard"
-                aria-label={t('nav.dashboard')}
-                className="w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-2xl bg-petal-500 hover:bg-petal-600 text-white text-sm font-bold shadow-md shadow-petal-200 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-              >
-                <span aria-hidden="true">📊</span>
-                <span>{isEn ? 'View in Dashboard' : 'Lihat di Dashboard'}</span>
-              </Link>
+                <h3 className="font-display font-bold text-lg sm:text-xl text-ink-primary">
+                  {isEn ? 'Calendar Projections' : 'Proyeksi Kalendar'}
+                </h3>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {nextThreeCycles.map((c) => (
+                <div
+                  key={c.cycleNumber}
+                  className="bg-gradient-to-br from-violet-50/70 to-purple-50/40 rounded-2xl p-4 border border-violet-100 text-xs shadow-2xs"
+                >
+                  <span className="font-bold text-violet-900 text-sm block mb-2">
+                    {isEn ? `Cycle ${c.cycleNumber}` : `Siklus ${c.cycleNumber}`}
+                  </span>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-ink-muted">{t('phases.period')}:</span>
+                      <strong className="text-rose-600 font-semibold">{formatDateShort(c.cycleStart, i18n.language)}</strong>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-ink-muted">{t('dashboard.ovulation')}:</span>
+                      <strong className="text-amber-700 font-semibold">{formatDateShort(c.ovulDate, i18n.language)}</strong>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-ink-muted">{t('dashboard.fertileWindow')}:</span>
+                      <strong className="text-pink-700 font-semibold">
+                        {formatDateShort(c.fertileStart, i18n.language)}–{formatDateShort(c.fertileEnd, i18n.language)}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* TERTIARY ACTION BUTTONS (Muted text buttons at bottom) */}
+          <div className="pt-2 text-center space-y-4">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={handleCopySummary}
                 aria-label={isEn ? 'Copy summary' : 'Salin ringkasan'}
-                className="w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-2xl bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                className="min-h-[40px] px-4 py-2 rounded-xl bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs sm:text-sm font-semibold shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
               >
                 <span aria-hidden="true">📋</span>
-                <span>{isEn ? 'Copy Summary' : 'Salin Ringkasan'}</span>
+                <span>{t('calculator.copySummary', isEn ? 'Copy Summary' : 'Salin Ringkasan')}</span>
               </button>
               <button
                 type="button"
                 onClick={() => window.print()}
                 aria-label={isEn ? 'Print report' : 'Cetak laporan'}
-                className="w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-2xl bg-white border border-rose-200 text-ink-primary hover:bg-rose-50 text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                className="min-h-[40px] px-4 py-2 rounded-xl bg-white border border-rose-200 text-ink-primary hover:bg-rose-50 text-xs sm:text-sm font-semibold shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
               >
                 <span aria-hidden="true">🖨️</span>
-                <span>{isEn ? 'Print Report' : 'Cetak Laporan'}</span>
+                <span>{t('calculator.printReport', isEn ? 'Print Report' : 'Cetak Laporan')}</span>
               </button>
               <button
                 type="button"
                 onClick={handleReset}
-                aria-label={isEn ? 'Reset' : 'Atur ulang'}
-                className="w-full sm:w-auto min-h-[44px] px-5 py-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                aria-label={isEn ? 'Reset data' : 'Atur ulang data'}
+                className="min-h-[40px] px-4 py-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
               >
                 <span aria-hidden="true">🔄</span>
-                <span>{isEn ? 'Reset Data' : 'Atur Ulang Data'}</span>
+                <span>{t('calculator.resetData', isEn ? 'Reset Data' : 'Atur Ulang Data')}</span>
               </button>
             </div>
 
+            {/* MEDICAL NOTICE */}
             <div className="max-w-2xl mx-auto p-4 rounded-2xl bg-rose-50/60 border border-rose-100 text-left">
               <p className="text-xs text-ink-muted leading-relaxed">
                 <strong className="text-ink-secondary">{isEn ? 'Medical Notice:' : 'Pemberitahuan Medis:'}</strong>{' '}

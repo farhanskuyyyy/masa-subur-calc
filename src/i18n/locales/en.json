@@ -138,7 +138,18 @@
     "longestCycle": "Longest Cycle (Days)",
     "advancedSettings": "Advanced Settings (Luteal Phase)",
     "lutealPhase": "Luteal Phase Length (Default 14 Days)",
-    "days": "days"
+    "days": "days",
+    "stepInput": "Input",
+    "stepResult": "Result",
+    "stepDetail": "Detail",
+    "todayFertile": "Today you are in your fertile window 🌟",
+    "todayNotFertile": "Today is outside your fertile window 🛡️",
+    "viewDetail": "View Details →",
+    "hideDetail": "Hide Details ↑",
+    "editInput": "Edit Input",
+    "copySummary": "Copy Summary",
+    "printReport": "Print Report",
+    "resetData": "Reset Data"
   },
   "symptoms": {
     "title": "Menstrual Symptom Questionnaire",

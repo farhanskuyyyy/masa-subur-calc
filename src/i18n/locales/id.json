@@ -138,7 +138,18 @@
     "longestCycle": "Siklus Terpanjang (Hari)",
     "advancedSettings": "Pengaturan Lanjutan (Fase Luteal)",
     "lutealPhase": "Panjang Fase Luteal (Standar 14 Hari)",
-    "days": "hari"
+    "days": "hari",
+    "stepInput": "Input",
+    "stepResult": "Hasil",
+    "stepDetail": "Detail",
+    "todayFertile": "Hari ini kamu sedang masa subur 🌟",
+    "todayNotFertile": "Hari ini belum subur 🛡️",
+    "viewDetail": "Lihat Detail →",
+    "hideDetail": "Sembunyikan Detail ↑",
+    "editInput": "Ubah Data",
+    "copySummary": "Salin Ringkasan",
+    "printReport": "Cetak Laporan",
+    "resetData": "Atur Ulang Data"
   },
   "symptoms": {
     "title": "Kuesioner Gejala Menstruasi",
